@@ -500,8 +500,13 @@ end)
 -- ─── Kill Brick Toggle Logic ───
 local killBrickToggleOn = false
 local savedCanCollide = nil
+local lastToggleTime = 0
 
-KillToggle.MouseButton1Click:Connect(function()
+local function toggleKillBrick()
+    local now = tick()
+    if now - lastToggleTime < 0.3 then return end
+    lastToggleTime = now
+
     killBrickToggleOn = not killBrickToggleOn
 
     local mapFolder = workspace:FindFirstChild("Map")
@@ -550,6 +555,22 @@ KillToggle.MouseButton1Click:Connect(function()
         -- Update button visual
         KillToggle.Text = "Disabled"
         TweenService:Create(KillToggle, TweenInfo.new(0.2), {BackgroundColor3 = COLORS.TOGGLE_OFF}):Play()
+    end
+end
+
+-- Desktop click
+KillToggle.MouseButton1Click:Connect(toggleKillBrick)
+
+-- Mobile touch fallback (bypasses ScrollingFrame consuming touches)
+UserInputService.TouchTap:Connect(function(touchPositions)
+    for _, touchPos in ipairs(touchPositions) do
+        local btnPos = KillToggle.AbsolutePosition
+        local btnSize = KillToggle.AbsoluteSize
+        if touchPos.X >= btnPos.X and touchPos.X <= btnPos.X + btnSize.X
+        and touchPos.Y >= btnPos.Y and touchPos.Y <= btnPos.Y + btnSize.Y then
+            toggleKillBrick()
+            break
+        end
     end
 end)
 
