@@ -252,39 +252,96 @@ ContentFrame.Parent = MainFrame
 -- ═══════════════════════════════════════════════════════════
 -- TAB: MAIN (Instant Win)
 -- ═══════════════════════════════════════════════════════════
-local MainTab = Instance.new("Frame")
+local MainTab = Instance.new("ScrollingFrame")
 MainTab.Name = "MainTab"
 MainTab.Size = UDim2.new(1, 0, 1, 0)
 MainTab.BackgroundTransparency = 1
+MainTab.BorderSizePixel = 0
+MainTab.ScrollBarThickness = 4
+MainTab.ScrollBarImageColor3 = COLORS.ACCENT
+MainTab.CanvasSize = UDim2.new(0, 0, 0, 0)
+MainTab.AutomaticCanvasSize = Enum.AutomaticSize.Y
 MainTab.Visible = true
 MainTab.Parent = ContentFrame
 
--- Instant Win Button
+local MainLayout = Instance.new("UIListLayout")
+MainLayout.SortOrder = Enum.SortOrder.LayoutOrder
+MainLayout.Padding = UDim.new(0, 10)
+MainLayout.Parent = MainTab
+addPadding(MainTab, 4, 4, 0, 0)
+
+-- Section header
+local SectionLabel = Instance.new("TextLabel")
+SectionLabel.Size = UDim2.new(1, 0, 0, 20)
+SectionLabel.BackgroundTransparency = 1
+SectionLabel.Text = "Quick Actions"
+SectionLabel.TextColor3 = COLORS.TEXT_DIM
+SectionLabel.TextSize = 12
+SectionLabel.Font = Enum.Font.GothamBold
+SectionLabel.TextXAlignment = Enum.TextXAlignment.Left
+SectionLabel.LayoutOrder = 1
+SectionLabel.Parent = MainTab
+
+-- Action card
+local ActionCard = Instance.new("Frame")
+ActionCard.Name = "ActionCard"
+ActionCard.Size = UDim2.new(1, 0, 0, 52)
+ActionCard.BackgroundColor3 = Color3.fromRGB(30, 30, 55)
+ActionCard.BorderSizePixel = 0
+ActionCard.LayoutOrder = 2
+ActionCard.Parent = MainTab
+addCorner(ActionCard, 10)
+addPadding(ActionCard, 8, 8, 14, 14)
+
+-- Card label
+local CardLabel = Instance.new("TextLabel")
+CardLabel.Size = UDim2.new(1, -110, 1, 0)
+CardLabel.BackgroundTransparency = 1
+CardLabel.Text = "Instant Win"
+CardLabel.TextColor3 = COLORS.TEXT
+CardLabel.TextSize = 15
+CardLabel.Font = Enum.Font.GothamSemibold
+CardLabel.TextXAlignment = Enum.TextXAlignment.Left
+CardLabel.Parent = ActionCard
+
+-- Card description (smaller text under the label)
+local CardDesc = Instance.new("TextLabel")
+CardDesc.Size = UDim2.new(1, -110, 0, 16)
+CardDesc.Position = UDim2.new(0, 0, 1, -16)
+CardDesc.BackgroundTransparency = 1
+CardDesc.Text = "Teleport to the win button"
+CardDesc.TextColor3 = COLORS.TEXT_DIM
+CardDesc.TextSize = 11
+CardDesc.Font = Enum.Font.Gotham
+CardDesc.TextXAlignment = Enum.TextXAlignment.Left
+CardDesc.Parent = ActionCard
+
+-- Instant Win Button (right side of card)
 local InstantWinBtn = Instance.new("TextButton")
 InstantWinBtn.Name = "InstantWinBtn"
-InstantWinBtn.Size = UDim2.new(0, 260, 0, 60)
-InstantWinBtn.Position = UDim2.new(0.5, -130, 0.4, -30)
+InstantWinBtn.Size = UDim2.new(0, 90, 0, 34)
+InstantWinBtn.Position = UDim2.new(1, -90, 0.5, -17)
 InstantWinBtn.BackgroundColor3 = COLORS.ACCENT
-InstantWinBtn.Text = "\xe2\x9a\xa1 Instant Win"
-InstantWinBtn.TextColor3 = COLORS.TEXT
-InstantWinBtn.TextSize = 20
+InstantWinBtn.Text = "Go"
+InstantWinBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+InstantWinBtn.TextSize = 14
 InstantWinBtn.Font = Enum.Font.GothamBold
 InstantWinBtn.BorderSizePixel = 0
 InstantWinBtn.AutoButtonColor = false
-InstantWinBtn.Parent = MainTab
-addCorner(InstantWinBtn, 12)
-addStroke(InstantWinBtn, Color3.fromRGB(120, 130, 255), 2)
+InstantWinBtn.Parent = ActionCard
+addCorner(InstantWinBtn, 8)
 
 -- Status label for error/success messages
 local StatusLabel = Instance.new("TextLabel")
 StatusLabel.Name = "StatusLabel"
-StatusLabel.Size = UDim2.new(0, 300, 0, 30)
-StatusLabel.Position = UDim2.new(0.5, -150, 0.55, 0)
+StatusLabel.Size = UDim2.new(1, 0, 0, 24)
 StatusLabel.BackgroundTransparency = 1
 StatusLabel.Text = ""
 StatusLabel.TextColor3 = COLORS.TEXT_DIM
-StatusLabel.TextSize = 16
+StatusLabel.TextSize = 13
 StatusLabel.Font = Enum.Font.GothamSemibold
+StatusLabel.TextXAlignment = Enum.TextXAlignment.Left
+StatusLabel.LayoutOrder = 3
 StatusLabel.Parent = MainTab
 
 -- Hover effects for Instant Win button
@@ -373,7 +430,8 @@ InstantWinBtn.MouseButton1Click:Connect(function()
         if character then
             local hrp = character:FindFirstChild("HumanoidRootPart")
             local mapFolder = workspace:FindFirstChild("Map")
-            local targetButton = mapFolder and mapFolder:FindFirstChild("Button")
+            local classicFolder = mapFolder and mapFolder:FindFirstChild("Classic")
+            local targetButton = classicFolder and classicFolder:FindFirstChild("Button")
             if hrp and targetButton then
                 hrp.CFrame = targetButton.CFrame + Vector3.new(0, 3, 0)
                 showStatus("Teleported!", COLORS.GREEN)
