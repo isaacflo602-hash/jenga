@@ -4,7 +4,6 @@ local TweenService = game:GetService("TweenService")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
--- ─── Configuration & Theme ───
 local THEME = {
     MainBg       = Color3.fromRGB(24, 24, 37),
     HeaderBg     = Color3.fromRGB(17, 17, 27),
@@ -18,7 +17,6 @@ local THEME = {
     OffState     = Color3.fromRGB(69, 71, 90),
 }
 
--- ─── UI Creation ───
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "NeoPanel_Core"
 ScreenGui.ResetOnSpawn = false
@@ -26,7 +24,6 @@ ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 ScreenGui.IgnoreGuiInset = true
 ScreenGui.Parent = playerGui
 
--- Base Window
 local MainWindow = Instance.new("Frame")
 MainWindow.Name = "MainWindow"
 MainWindow.Size = UDim2.new(0, 460, 0, 360)
@@ -45,7 +42,6 @@ MainStroke.Color = THEME.CardBg
 MainStroke.Thickness = 1.5
 MainStroke.Parent = MainWindow
 
--- Header
 local Header = Instance.new("Frame")
 Header.Name = "Header"
 Header.Size = UDim2.new(1, 0, 0, 40)
@@ -92,7 +88,6 @@ local CloseCorner = Instance.new("UICorner")
 CloseCorner.CornerRadius = UDim.new(0, 6)
 CloseCorner.Parent = CloseBtn
 
--- ─── Scrolling Content Panel Engine ───
 local PageScroll = Instance.new("ScrollingFrame")
 PageScroll.Name = "PageScroll"
 PageScroll.Size = UDim2.new(1, -28, 1, -110)
@@ -111,7 +106,6 @@ UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 UIListLayout.Padding = UDim.new(0, 10)
 UIListLayout.Parent = PageScroll
 
--- Section Label
 local SecHeader = Instance.new("TextLabel")
 SecHeader.Size = UDim2.new(1, 0, 0, 20)
 SecHeader.BackgroundTransparency = 1
@@ -123,7 +117,6 @@ SecHeader.TextXAlignment = Enum.TextXAlignment.Left
 SecHeader.LayoutOrder = 1
 SecHeader.Parent = PageScroll
 
--- ─── Feature UI Component Builders ───
 local function buildFeatureButton(titleText, subText, LayoutOrder)
     local card = Instance.new("Frame")
     card.Size = UDim2.new(1, 0, 0, 54)
@@ -233,29 +226,32 @@ local function buildTrueToggleRow(titleText, subText, LayoutOrder)
     descLabel.TextXAlignment = Enum.TextXAlignment.Left
     descLabel.Parent = card
 
-    -- Dedicated Active Switch Area 
-    local toggleButton = Instance.new("TextButton")
-    toggleButton.Size = UDim2.new(0, 50, 0, 26)
-    toggleButton.Position = UDim2.new(1, -62, 0.5, -13)
-    toggleButton.BackgroundColor3 = THEME.OffState
-    toggleButton.BorderSizePixel = 0
-    toggleButton.Text = ""
-    toggleButton.AutoButtonColor = false
-    toggleButton.Parent = card
-    local tbc = Instance.new("UICorner") tbc.CornerRadius = UDim.new(0, 13) tbc.Parent = toggleButton
+    local toggleContainer = Instance.new("Frame")
+    toggleContainer.Size = UDim2.new(0, 50, 0, 26)
+    toggleContainer.Position = UDim2.new(1, -62, 0.5, -13)
+    toggleContainer.BackgroundColor3 = THEME.OffState
+    toggleContainer.BorderSizePixel = 0
+    toggleContainer.Parent = card
+    local tbc = Instance.new("UICorner") tbc.CornerRadius = UDim.new(0, 13) tbc.Parent = toggleContainer
 
     local toggleDot = Instance.new("Frame")
     toggleDot.Size = UDim2.new(0, 18, 0, 18)
     toggleDot.Position = UDim2.new(0, 4, 0.5, -9)
     toggleDot.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     toggleDot.BorderSizePixel = 0
-    toggleDot.Parent = toggleButton
+    toggleDot.Parent = toggleContainer
     local tdc = Instance.new("UICorner") tdc.CornerRadius = UDim.new(0, 9) tdc.Parent = toggleDot
 
-    return toggleButton, toggleDot
+    local actionButton = Instance.new("TextButton")
+    actionButton.Size = UDim2.new(1, 0, 1, 0)
+    actionButton.BackgroundTransparency = 1
+    actionButton.Text = ""
+    actionButton.ZIndex = 5
+    actionButton.Parent = toggleContainer
+
+    return toggleContainer, toggleDot, actionButton
 end
 
--- Generate Requested Modules
 local _, TeleportWinTrigger       = buildFeatureButton("Instant Teleport", "Warp directly to objective button", 2)
 local _, DeleteTowerTrigger       = buildFeatureButton("Delete Tower", "Completely destroy the main tower model", 3)
 local _, TeleportDestroyerTrigger = buildFeatureButton("Teleport the Destroyer", "Warp straight to the Shooter Panel Add", 4)
@@ -263,9 +259,8 @@ local _, TeleportDestroyerTrigger = buildFeatureButton("Teleport the Destroyer",
 local SpeedInput = buildValueInput("WalkSpeed Modification", "16", 5)
 local JumpInput  = buildValueInput("JumpPower Modification", "50", 6)
 
-local InfJumpButton, InfToggleDot = buildTrueToggleRow("Infinite Jump", "Toggle seamless multi-air jumps", 7)
+local InfJumpContainer, InfToggleDot, InfJumpButton = buildTrueToggleRow("Infinite Jump", "Toggle seamless multi-air jumps", 7)
 
--- Status Bar Footer
 local StatusBar = Instance.new("TextLabel")
 StatusBar.Size = UDim2.new(1, -28, 0, 20)
 StatusBar.Position = UDim2.new(0, 14, 1, -54)
@@ -277,7 +272,6 @@ StatusBar.Font = Enum.Font.GothamMedium
 StatusBar.TextXAlignment = Enum.TextXAlignment.Left
 StatusBar.Parent = MainWindow
 
--- Bottom Attribution Frame
 local Attribution = Instance.new("TextLabel")
 Attribution.Size = UDim2.new(1, -28, 0, 20)
 Attribution.Position = UDim2.new(0, 14, 1, -26)
@@ -289,7 +283,6 @@ Attribution.Font = Enum.Font.GothamMedium
 Attribution.TextXAlignment = Enum.TextXAlignment.Left
 Attribution.Parent = MainWindow
 
--- ─── Cross Platform Smart Input Engine ───
 local function registerUniversalTap(buttonInstance, actionCallback)
     buttonInstance.MouseButton1Click:Connect(actionCallback)
     buttonInstance.TouchTap:Connect(actionCallback)
@@ -306,20 +299,15 @@ local function pushStatus(message, isAlert)
     end)
 end
 
--- Close Button
 registerUniversalTap(CloseBtn, function()
     ScreenGui:Destroy()
 end)
 
--- ─── Feature Executions ───
-
--- Helper function to fetch safe character reference
 local function getHRP()
     local char = player.Character
     return char and char:FindFirstChild("HumanoidRootPart")
 end
 
--- Helper validation function to confirm player belongs to Towers team
 local function verifyTowersTeam()
     local myTeam = player.Team
     if myTeam and myTeam.Name == "Towers" then
@@ -329,7 +317,6 @@ local function verifyTowersTeam()
     return false
 end
 
--- 1. Original Objective Teleport
 registerUniversalTap(TeleportWinTrigger, function()
     if not verifyTowersTeam() then return end
     
@@ -343,7 +330,6 @@ registerUniversalTap(TeleportWinTrigger, function()
     end
 end)
 
--- 2. Delete Tower
 registerUniversalTap(DeleteTowerTrigger, function()
     local targetTower = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Classic") and workspace.Map.Classic:FindFirstChild("Tower")
     if targetTower then
@@ -354,7 +340,6 @@ registerUniversalTap(DeleteTowerTrigger, function()
     end
 end)
 
--- 3. Teleport to Shooter Control Panel Add
 registerUniversalTap(TeleportDestroyerTrigger, function()
     if not verifyTowersTeam() then return end
 
@@ -374,7 +359,6 @@ registerUniversalTap(TeleportDestroyerTrigger, function()
     end
 end)
 
--- 4 & 5. Speed & Jump Attribute Textbox Focus Engine
 SpeedInput.FocusLost:Connect(function(enterPressed)
     local val = tonumber(SpeedInput.Text)
     local char = player.Character
@@ -396,32 +380,31 @@ JumpInput.FocusLost:Connect(function(enterPressed)
     end
 end)
 
--- 6. True Toggle Engine Slider Management
 local infJumpActive = false
 local jumpConnection = nil
 
 registerUniversalTap(InfJumpButton, function()
-    if not infJumpActive then
+    if infJumpActive == false then
         infJumpActive = true
         pushStatus("Infinite jump enabled.", false)
         
-        -- Slide dot right and change background color to active accent
-        TweenService:Create(InfJumpButton, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = THEME.Accent}):Play()
+        TweenService:Create(InfJumpContainer, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = THEME.Accent}):Play()
         TweenService:Create(InfToggleDot, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = UDim2.new(1, -22, 0.5, -9)}):Play()
         
-        jumpConnection = UserInputService.JumpRequest:Connect(function()
-            local char = player.Character
-            local hum = char and char:FindFirstChildOfClass("Humanoid")
-            if hum then
-                hum:ChangeState(Enum.HumanoidStateType.Jumping)
-            end
-        end)
+        if not jumpConnection then
+            jumpConnection = UserInputService.JumpRequest:Connect(function()
+                local char = player.Character
+                local hum = char and char:FindFirstChildOfClass("Humanoid")
+                if hum then
+                    hum:ChangeState(Enum.HumanoidStateType.Jumping)
+                end
+            end)
+        end
     else
         infJumpActive = false
         pushStatus("Infinite jump deactivated.", false)
         
-        -- Slide dot left and revert back to default state background color
-        TweenService:Create(InfJumpButton, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = THEME.OffState}):Play()
+        TweenService:Create(InfJumpContainer, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = THEME.OffState}):Play()
         TweenService:Create(InfToggleDot, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = UDim2.new(0, 4, 0.5, -9)}):Play()
         
         if jumpConnection then
@@ -431,7 +414,6 @@ registerUniversalTap(InfJumpButton, function()
     end
 end)
 
--- ─── Drag Management Engine ───
 local moving = false
 local offsetPos = Vector3.new()
 local initialPos = UDim2.new()
