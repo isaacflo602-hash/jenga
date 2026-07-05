@@ -1,3 +1,7 @@
+--[[
+    source
+]]
+
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
@@ -207,6 +211,7 @@ TabScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
 TabScroll.AutomaticCanvasSize = Enum.AutomaticSize.X
 TabScroll.ElasticBehavior = Enum.ElasticBehavior.Always
 TabScroll.ZIndex = 3
+TabScroll.Active = false
 TabScroll.Parent = TabBar
 
 local TabList = Instance.new("UIListLayout")
@@ -259,7 +264,8 @@ MainTab.ScrollBarImageColor3 = COLORS.ACCENT
 MainTab.CanvasSize = UDim2.new(0, 0, 0, 0)
 MainTab.AutomaticCanvasSize = Enum.AutomaticSize.Y
 MainTab.Visible = true
-MainTab.Selectable = false -- Prevents swallowing focus over elements inside
+MainTab.Selectable = false
+MainTab.Active = false -- Allows touch pass-through to underlying elements
 MainTab.Parent = ContentFrame
 
 local MainLayout = Instance.new("UIListLayout")
@@ -302,7 +308,7 @@ CardLabel.Font = Enum.Font.GothamSemibold
 CardLabel.TextXAlignment = Enum.TextXAlignment.Left
 CardLabel.Parent = ActionCard
 
--- Card description (smaller text under the label)
+-- Card description
 local CardDesc = Instance.new("TextLabel")
 CardDesc.Size = UDim2.new(1, -110, 0, 16)
 CardDesc.Position = UDim2.new(0, 0, 1, -16)
@@ -314,7 +320,7 @@ CardDesc.Font = Enum.Font.Gotham
 CardDesc.TextXAlignment = Enum.TextXAlignment.Left
 CardDesc.Parent = ActionCard
 
--- Instant Win Button (right side of card)
+-- Instant Win Button
 local InstantWinBtn = Instance.new("TextButton")
 InstantWinBtn.Name = "InstantWinBtn"
 InstantWinBtn.Size = UDim2.new(0, 90, 0, 34)
@@ -326,7 +332,7 @@ InstantWinBtn.TextSize = 14
 InstantWinBtn.Font = Enum.Font.GothamBold
 InstantWinBtn.BorderSizePixel = 0
 InstantWinBtn.AutoButtonColor = false
-InstantWinBtn.Active = true
+InstantWinBtn.ZIndex = 10 -- Pop to front layer
 InstantWinBtn.Parent = ActionCard
 addCorner(InstantWinBtn, 8)
 
@@ -376,7 +382,7 @@ KillToggle.TextSize = 13
 KillToggle.Font = Enum.Font.GothamBold
 KillToggle.BorderSizePixel = 0
 KillToggle.AutoButtonColor = false
-KillToggle.Active = true -- Key property optimization for mobile interaction
+KillToggle.ZIndex = 10 -- Pop to front layer
 KillToggle.Parent = ToggleCard
 addCorner(KillToggle, 8)
 
@@ -461,7 +467,7 @@ task.defer(function()
     updateIndicator()
 end)
 
--- ─── Instant Win Button Logic ───
+-- Status helper
 local function showStatus(text, color)
     StatusLabel.Text = text
     StatusLabel.TextColor3 = color
@@ -472,7 +478,8 @@ local function showStatus(text, color)
     end)
 end
 
-InstantWinBtn.Activated:Connect(function()
+-- ─── Instant Win Action ───
+local function fireInstantWin()
     local team = player.Team
     if team and team.Name == "Towers" then
         local character = player.Character
@@ -492,6 +499,13 @@ InstantWinBtn.Activated:Connect(function()
         end
     else
         showStatus("error", COLORS.RED)
+    end
+end
+
+-- Absolute Mobile Touch Catching for Instant Win
+InstantWinBtn.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        fireInstantWin()
     end
 end)
 
@@ -513,51 +527,48 @@ local function toggleKillBrick()
 
     if killBrickToggleOn then
         if killBrick then
-            -- Disable the Code script
             local code = killBrick:FindFirstChild("Code")
             if code and code:IsA("Script") then
                 code.Disabled = true
             end
 
-            -- Remove TouchInterest
             local touchInterest = killBrick:FindFirstChild("TouchInterest")
             if touchInterest then
                 touchInterest.Parent = nil
             end
 
-            -- Make KillBrick collidable (solid block)
             if killBrick:IsA("BasePart") then
                 savedCanCollide = killBrick.CanCollide
                 killBrick.CanCollide = true
             end
         end
 
-        -- Update button visual
         KillToggle.Text = "Enabled"
         TweenService:Create(KillToggle, TweenInfo.new(0.2), {BackgroundColor3 = COLORS.TOGGLE_ON}):Play()
     else
         if killBrick then
-            -- Re-enable the Code script
             local code = killBrick:FindFirstChild("Code")
             if code and code:IsA("Script") then
                 code.Disabled = false
             end
 
-            -- Restore CanCollide
             if killBrick:IsA("BasePart") and savedCanCollide ~= nil then
                 killBrick.CanCollide = savedCanCollide
                 savedCanCollide = nil
             end
         end
 
-        -- Update button visual
         KillToggle.Text = "Disabled"
         TweenService:Create(KillToggle, TweenInfo.new(0.2), {BackgroundColor3 = COLORS.TOGGLE_OFF}):Play()
     end
 end
 
--- Fire logic uniformly across all devices (Desktop click & Mobile touch tap)
-KillToggle.Activated:Connect(toggleKillBrick)
+-- Absolute Mobile Touch Catching for Toggle
+KillToggle.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        toggleKillBrick()
+    end
+end)
 
 
 -- ─── Window State ───
