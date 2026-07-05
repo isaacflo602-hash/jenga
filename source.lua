@@ -1,5 +1,5 @@
+--hi
 local Players = game:GetService("Players")
-local workspace = game:GetService("workspace")
 local player = Players.LocalPlayer
 
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
@@ -33,7 +33,6 @@ local function verifyTowersTeam()
         Title = "Action Blocked",
         Content = "Must be on Towers team",
         Duration = 4,
-        Image = nil,
     })
     return false
 end
@@ -44,21 +43,22 @@ Tab:CreateButton({
         if not verifyTowersTeam() then return end
         
         local root = getHRP()
-        local obj = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Classic") and workspace.Map.Classic:FindFirstChild("Button")
+        local map = game.Workspace:FindFirstChild("Map")
+        local classic = map and map:FindFirstChild("Classic")
+        local obj = classic and classic:FindFirstChild("Button")
+        
         if root and obj and obj:IsA("BasePart") then
             root.CFrame = obj.CFrame * CFrame.new(0, 3, 0)
             Rayfield:Notify({
                 Title = "Success",
                 Content = "Warped to button objective.",
                 Duration = 4,
-                Image = nil,
             })
         else
             Rayfield:Notify({
                 Title = "Error",
                 Content = "Target element not found.",
                 Duration = 4,
-                Image = nil,
             })
         end
     end,
@@ -67,21 +67,22 @@ Tab:CreateButton({
 Tab:CreateButton({
     Name = "Delete Tower",
     Callback = function()
-        local targetTower = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Classic") and workspace.Map.Classic:FindFirstChild("Tower")
+        local map = game.Workspace:FindFirstChild("Map")
+        local classic = map and map:FindFirstChild("Classic")
+        local targetTower = classic and classic:FindFirstChild("Tower")
+        
         if targetTower then
             targetTower:Destroy()
             Rayfield:Notify({
                 Title = "Success",
                 Content = "Tower model successfully expunged.",
                 Duration = 4,
-                Image = nil,
             })
         else
             Rayfield:Notify({
                 Title = "Error",
                 Content = "Tower target location missing or already deleted.",
                 Duration = 4,
-                Image = nil,
             })
         end
     end,
@@ -93,7 +94,7 @@ Tab:CreateButton({
         if not verifyTowersTeam() then return end
 
         local root = getHRP()
-        local map = workspace:FindFirstChild("Map")
+        local map = game.Workspace:FindFirstChild("Map")
         local classic = map and map:FindFirstChild("Classic")
         local shooter = classic and classic:FindFirstChild("Shooter")
         local panel = shooter and shooter:FindFirstChild("ControlPannel")
@@ -106,14 +107,12 @@ Tab:CreateButton({
                 Title = "Success",
                 Content = "Warped to Control Panel Speed Add.",
                 Duration = 4,
-                Image = nil,
             })
         else
             Rayfield:Notify({
                 Title = "Error",
                 Content = "Target Shooter Add asset missing.",
                 Duration = 4,
-                Image = nil,
             })
         end
     end,
@@ -133,7 +132,6 @@ Tab:CreateInput({
                 Title = "Calibrated",
                 Content = "WalkSpeed calibrated to: " .. val,
                 Duration = 4,
-                Image = nil,
             })
         end
     end,
@@ -154,7 +152,6 @@ Tab:CreateInput({
                 Title = "Calibrated",
                 Content = "JumpPower calibrated to: " .. val,
                 Duration = 4,
-                Image = nil,
             })
         end
     end,
