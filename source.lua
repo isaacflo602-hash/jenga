@@ -1,4 +1,7 @@
-
+--[[
+    NEO-PANEL REBOOT: ADVANCED EDITION
+    Architecture: Scrollable Grid + Dual-Channel Native Input
+]]
 
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
@@ -204,6 +207,63 @@ local function buildValueInput(titleText, defaultPlaceholder, LayoutOrder)
     return box
 end
 
+local function buildToggleRow(titleText, subText, LayoutOrder)
+    local card = Instance.new("Frame")
+    card.Size = UDim2.new(1, 0, 0, 54)
+    card.BackgroundColor3 = THEME.CardBg
+    card.BorderSizePixel = 0
+    card.LayoutOrder = LayoutOrder
+    card.Parent = PageScroll
+    local cc = Instance.new("UICorner") cc.CornerRadius = UDim.new(0, 8) cc.Parent = card
+    
+    local mainLabel = Instance.new("TextLabel")
+    mainLabel.Size = UDim2.new(1, -70, 0, 22)
+    mainLabel.Position = UDim2.new(0, 12, 0, 8)
+    mainLabel.BackgroundTransparency = 1
+    mainLabel.Text = titleText
+    mainLabel.TextColor3 = THEME.Text
+    mainLabel.TextSize = 13
+    mainLabel.Font = Enum.Font.GothamBold
+    mainLabel.TextXAlignment = Enum.TextXAlignment.Left
+    mainLabel.Parent = card
+
+    local descLabel = Instance.new("TextLabel")
+    descLabel.Size = UDim2.new(1, -70, 0, 18)
+    descLabel.Position = UDim2.new(0, 12, 0, 28)
+    descLabel.BackgroundTransparency = 1
+    descLabel.Text = subText
+    descLabel.TextColor3 = THEME.TextMuted
+    descLabel.TextSize = 10
+    descLabel.Font = Enum.Font.Gotham
+    descLabel.TextXAlignment = Enum.TextXAlignment.Left
+    descLabel.Parent = card
+
+    local toggleBox = Instance.new("Frame")
+    toggleBox.Size = UDim2.new(0, 44, 0, 24)
+    toggleBox.Position = UDim2.new(1, -56, 0.5, -12)
+    toggleBox.BackgroundColor3 = THEME.OffState
+    toggleBox.BorderSizePixel = 0
+    toggleBox.Parent = card
+    local tbc = Instance.new("UICorner") tbc.CornerRadius = UDim.new(0, 12) tbc.Parent = toggleBox
+
+    local toggleDot = Instance.new("Frame")
+    toggleDot.Size = UDim2.new(0, 16, 0, 16)
+    toggleDot.Position = UDim2.new(0, 4, 0.5, -8)
+    toggleDot.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    toggleDot.BorderSizePixel = 0
+    toggleDot.Parent = toggleBox
+    local tdc = Instance.new("UICorner") tdc.CornerRadius = UDim.new(0, 8) tdc.Parent = toggleDot
+
+    local interceptor = Instance.new("TextButton")
+    interceptor.Size = UDim2.new(1, 0, 1, 0)
+    interceptor.BackgroundTransparency = 1
+    interceptor.Text = ""
+    interceptor.ZIndex = 5
+    interceptor.Parent = card
+
+    return toggleBox, toggleDot, interceptor
+end
+
 -- Generate Requested Modules
 local _, TeleportWinTrigger       = buildFeatureButton("Instant Teleport", "Warp directly to objective button", 2)
 local _, DeleteTowerTrigger       = buildFeatureButton("Delete Tower", "Completely destroy the main tower model", 3)
@@ -212,7 +272,7 @@ local _, TeleportDestroyerTrigger = buildFeatureButton("Teleport the Destroyer",
 local SpeedInput = buildValueInput("WalkSpeed Modification", "16", 5)
 local JumpInput  = buildValueInput("JumpPower Modification", "50", 6)
 
-local InfJumpCard, InfJumpTrigger = buildFeatureButton("Infinite Jump", "Toggle seamless multi-air jumps", 7)
+local InfToggleBox, InfToggleDot, InfJumpTrigger = buildToggleRow("Infinite Jump", "Toggle seamless multi-air jumps", 7)
 
 -- Status Bar Footer
 local StatusBar = Instance.new("TextLabel")
@@ -345,16 +405,17 @@ JumpInput.FocusLost:Connect(function(enterPressed)
     end
 end)
 
--- 6. Infinite Jump Toggle Tracking (Fixed)
+-- 6. Infinite Jump Toggle Element Architecture
 local infJumpActive = false
 local jumpConnection = nil
 
 registerUniversalTap(InfJumpTrigger, function()
     if not infJumpActive then
-        -- Enable infinite jump
         infJumpActive = true
-        InfJumpCard.BackgroundColor3 = THEME.Accent
         pushStatus("Infinite jump enabled.", false)
+        
+        TweenService:Create(InfToggleBox, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = THEME.Accent}):Play()
+        TweenService:Create(InfToggleDot, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = UDim2.new(1, -20, 0.5, -8)}):Play()
         
         jumpConnection = UserInputService.JumpRequest:Connect(function()
             local char = player.Character
@@ -364,10 +425,12 @@ registerUniversalTap(InfJumpTrigger, function()
             end
         end)
     else
-        -- Disable infinite jump
         infJumpActive = false
-        InfJumpCard.BackgroundColor3 = THEME.CardBg
         pushStatus("Infinite jump deactivated.", false)
+        
+        TweenService:Create(InfToggleBox, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = THEME.OffState}):Play()
+        TweenService:Create(InfToggleDot, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = UDim2.new(0, 4, 0.5, -8)}):Play()
+        
         if jumpConnection then
             jumpConnection:Disconnect()
             jumpConnection = nil
