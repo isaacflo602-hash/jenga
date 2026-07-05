@@ -387,6 +387,7 @@ KillToggleCircle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 KillToggleCircle.BorderSizePixel = 0
 KillToggleCircle.Parent = KillToggle
 addCorner(KillToggleCircle, 9)
+KillToggleCircle.Active = false
 
 -- Status label for error/success messages
 local StatusLabel = Instance.new("TextLabel")
