@@ -505,29 +505,33 @@ end)
 
 -- ─── Kill Brick Toggle Logic ───
 local killBrickToggleOn = false
-local savedCode = nil
-local savedTouchInterest = nil
+local savedCanCollide = nil
 
 KillToggle.MouseButton1Click:Connect(function()
     killBrickToggleOn = not killBrickToggleOn
 
+    local mapFolder = workspace:FindFirstChild("Map")
+    local classicFolder = mapFolder and mapFolder:FindFirstChild("Classic")
+    local killBrick = classicFolder and classicFolder:FindFirstChild("KillBrick")
+
     if killBrickToggleOn then
-        -- Remove Code and TouchInterest from KillBrick
-        local mapFolder = workspace:FindFirstChild("Map")
-        local classicFolder = mapFolder and mapFolder:FindFirstChild("Classic")
-        local killBrick = classicFolder and classicFolder:FindFirstChild("KillBrick")
-
         if killBrick then
+            -- Disable the Code script
             local code = killBrick:FindFirstChild("Code")
-            local touchInterest = killBrick:FindFirstChild("TouchInterest")
-
-            if code then
-                savedCode = code
-                code.Parent = nil
+            if code and code:IsA("Script") then
+                code.Disabled = true
             end
+
+            -- Remove TouchInterest
+            local touchInterest = killBrick:FindFirstChild("TouchInterest")
             if touchInterest then
-                savedTouchInterest = touchInterest
                 touchInterest.Parent = nil
+            end
+
+            -- Make KillBrick collidable (solid block)
+            if killBrick:IsA("BasePart") then
+                savedCanCollide = killBrick.CanCollide
+                killBrick.CanCollide = true
             end
         end
 
@@ -535,24 +539,18 @@ KillToggle.MouseButton1Click:Connect(function()
         TweenService:Create(KillToggle, TweenInfo.new(0.2), {BackgroundColor3 = COLORS.TOGGLE_ON}):Play()
         TweenService:Create(KillToggleCircle, TweenInfo.new(0.2, Enum.EasingStyle.Back), {Position = UDim2.new(1, -22, 0.5, -9)}):Play()
     else
-        -- Restore Code and TouchInterest back to KillBrick
-        if savedCode then
-            local mapFolder = workspace:FindFirstChild("Map")
-            local classicFolder = mapFolder and mapFolder:FindFirstChild("Classic")
-            local killBrick = classicFolder and classicFolder:FindFirstChild("KillBrick")
-            if killBrick then
-                savedCode.Parent = killBrick
+        if killBrick then
+            -- Re-enable the Code script
+            local code = killBrick:FindFirstChild("Code")
+            if code and code:IsA("Script") then
+                code.Disabled = false
             end
-            savedCode = nil
-        end
-        if savedTouchInterest then
-            local mapFolder = workspace:FindFirstChild("Map")
-            local classicFolder = mapFolder and mapFolder:FindFirstChild("Classic")
-            local killBrick = classicFolder and classicFolder:FindFirstChild("KillBrick")
-            if killBrick then
-                savedTouchInterest.Parent = killBrick
+
+            -- Restore CanCollide
+            if killBrick:IsA("BasePart") and savedCanCollide ~= nil then
+                killBrick.CanCollide = savedCanCollide
+                savedCanCollide = nil
             end
-            savedTouchInterest = nil
         end
 
         -- Update toggle visual
