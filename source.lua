@@ -25,6 +25,8 @@ local COLORS = {
     GREEN       = Color3.fromRGB(34, 197, 94),
     RED         = Color3.fromRGB(239, 68, 68),
     GRAY        = Color3.fromRGB(107, 114, 128),
+    TOGGLE_OFF  = Color3.fromRGB(55, 55, 85),
+    TOGGLE_ON   = Color3.fromRGB(88, 101, 242),
 }
 
 -- ─── Helper Functions ───
@@ -331,6 +333,61 @@ InstantWinBtn.AutoButtonColor = false
 InstantWinBtn.Parent = ActionCard
 addCorner(InstantWinBtn, 8)
 
+-- Toggle card
+local ToggleCard = Instance.new("Frame")
+ToggleCard.Name = "ToggleCard"
+ToggleCard.Size = UDim2.new(1, 0, 0, 52)
+ToggleCard.BackgroundColor3 = Color3.fromRGB(30, 30, 55)
+ToggleCard.BorderSizePixel = 0
+ToggleCard.LayoutOrder = 3
+ToggleCard.Parent = MainTab
+addCorner(ToggleCard, 10)
+addPadding(ToggleCard, 8, 8, 14, 14)
+
+-- Toggle card label
+local ToggleCardLabel = Instance.new("TextLabel")
+ToggleCardLabel.Size = UDim2.new(1, -70, 1, 0)
+ToggleCardLabel.BackgroundTransparency = 1
+ToggleCardLabel.Text = "Disable Kill Brick"
+ToggleCardLabel.TextColor3 = COLORS.TEXT
+ToggleCardLabel.TextSize = 15
+ToggleCardLabel.Font = Enum.Font.GothamSemibold
+ToggleCardLabel.TextXAlignment = Enum.TextXAlignment.Left
+ToggleCardLabel.Parent = ToggleCard
+
+-- Toggle card description
+local ToggleCardDesc = Instance.new("TextLabel")
+ToggleCardDesc.Size = UDim2.new(1, -70, 0, 16)
+ToggleCardDesc.Position = UDim2.new(0, 0, 1, -16)
+ToggleCardDesc.BackgroundTransparency = 1
+ToggleCardDesc.Text = "Remove kill brick code & touch"
+ToggleCardDesc.TextColor3 = COLORS.TEXT_DIM
+ToggleCardDesc.TextSize = 11
+ToggleCardDesc.Font = Enum.Font.Gotham
+ToggleCardDesc.TextXAlignment = Enum.TextXAlignment.Left
+ToggleCardDesc.Parent = ToggleCard
+
+-- Toggle switch
+local KillToggle = Instance.new("TextButton")
+KillToggle.Name = "KillToggle"
+KillToggle.Size = UDim2.new(0, 48, 0, 24)
+KillToggle.Position = UDim2.new(1, -48, 0.5, -12)
+KillToggle.BackgroundColor3 = COLORS.TOGGLE_OFF
+KillToggle.Text = ""
+KillToggle.BorderSizePixel = 0
+KillToggle.AutoButtonColor = false
+KillToggle.Parent = ToggleCard
+addCorner(KillToggle, 12)
+
+-- Toggle circle
+local KillToggleCircle = Instance.new("Frame")
+KillToggleCircle.Size = UDim2.new(0, 18, 0, 18)
+KillToggleCircle.Position = UDim2.new(0, 4, 0.5, -9)
+KillToggleCircle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+KillToggleCircle.BorderSizePixel = 0
+KillToggleCircle.Parent = KillToggle
+addCorner(KillToggleCircle, 9)
+
 -- Status label for error/success messages
 local StatusLabel = Instance.new("TextLabel")
 StatusLabel.Name = "StatusLabel"
@@ -341,7 +398,7 @@ StatusLabel.TextColor3 = COLORS.TEXT_DIM
 StatusLabel.TextSize = 13
 StatusLabel.Font = Enum.Font.GothamSemibold
 StatusLabel.TextXAlignment = Enum.TextXAlignment.Left
-StatusLabel.LayoutOrder = 3
+StatusLabel.LayoutOrder = 4
 StatusLabel.Parent = MainTab
 
 -- Hover effects for Instant Win button
@@ -443,6 +500,64 @@ InstantWinBtn.MouseButton1Click:Connect(function()
         end
     else
         showStatus("error", COLORS.RED)
+    end
+end)
+
+-- ─── Kill Brick Toggle Logic ───
+local killBrickToggleOn = false
+local savedCode = nil
+local savedTouchInterest = nil
+
+KillToggle.MouseButton1Click:Connect(function()
+    killBrickToggleOn = not killBrickToggleOn
+
+    if killBrickToggleOn then
+        -- Remove Code and TouchInterest from KillBrick
+        local mapFolder = workspace:FindFirstChild("Map")
+        local classicFolder = mapFolder and mapFolder:FindFirstChild("Classic")
+        local killBrick = classicFolder and classicFolder:FindFirstChild("KillBrick")
+
+        if killBrick then
+            local code = killBrick:FindFirstChild("Code")
+            local touchInterest = killBrick:FindFirstChild("TouchInterest")
+
+            if code then
+                savedCode = code
+                code.Parent = nil
+            end
+            if touchInterest then
+                savedTouchInterest = touchInterest
+                touchInterest.Parent = nil
+            end
+        end
+
+        -- Update toggle visual
+        TweenService:Create(KillToggle, TweenInfo.new(0.2), {BackgroundColor3 = COLORS.TOGGLE_ON}):Play()
+        TweenService:Create(KillToggleCircle, TweenInfo.new(0.2, Enum.EasingStyle.Back), {Position = UDim2.new(1, -22, 0.5, -9)}):Play()
+    else
+        -- Restore Code and TouchInterest back to KillBrick
+        if savedCode then
+            local mapFolder = workspace:FindFirstChild("Map")
+            local classicFolder = mapFolder and mapFolder:FindFirstChild("Classic")
+            local killBrick = classicFolder and classicFolder:FindFirstChild("KillBrick")
+            if killBrick then
+                savedCode.Parent = killBrick
+            end
+            savedCode = nil
+        end
+        if savedTouchInterest then
+            local mapFolder = workspace:FindFirstChild("Map")
+            local classicFolder = mapFolder and mapFolder:FindFirstChild("Classic")
+            local killBrick = classicFolder and classicFolder:FindFirstChild("KillBrick")
+            if killBrick then
+                savedTouchInterest.Parent = killBrick
+            end
+            savedTouchInterest = nil
+        end
+
+        -- Update toggle visual
+        TweenService:Create(KillToggle, TweenInfo.new(0.2), {BackgroundColor3 = COLORS.TOGGLE_OFF}):Play()
+        TweenService:Create(KillToggleCircle, TweenInfo.new(0.2, Enum.EasingStyle.Back), {Position = UDim2.new(0, 4, 0.5, -9)}):Play()
     end
 end)
 
