@@ -367,27 +367,20 @@ ToggleCardDesc.Font = Enum.Font.Gotham
 ToggleCardDesc.TextXAlignment = Enum.TextXAlignment.Left
 ToggleCardDesc.Parent = ToggleCard
 
--- Toggle switch
+-- Toggle button
 local KillToggle = Instance.new("TextButton")
 KillToggle.Name = "KillToggle"
-KillToggle.Size = UDim2.new(0, 48, 0, 24)
-KillToggle.Position = UDim2.new(1, -48, 0.5, -12)
+KillToggle.Size = UDim2.new(0, 90, 0, 34)
+KillToggle.Position = UDim2.new(1, -90, 0.5, -17)
 KillToggle.BackgroundColor3 = COLORS.TOGGLE_OFF
-KillToggle.Text = ""
+KillToggle.Text = "Disabled"
+KillToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+KillToggle.TextSize = 13
+KillToggle.Font = Enum.Font.GothamBold
 KillToggle.BorderSizePixel = 0
 KillToggle.AutoButtonColor = false
 KillToggle.Parent = ToggleCard
-addCorner(KillToggle, 12)
-
--- Toggle circle
-local KillToggleCircle = Instance.new("Frame")
-KillToggleCircle.Size = UDim2.new(0, 18, 0, 18)
-KillToggleCircle.Position = UDim2.new(0, 4, 0.5, -9)
-KillToggleCircle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-KillToggleCircle.BorderSizePixel = 0
-KillToggleCircle.Parent = KillToggle
-addCorner(KillToggleCircle, 9)
-KillToggleCircle.Active = false
+addCorner(KillToggle, 8)
 
 -- Status label for error/success messages
 local StatusLabel = Instance.new("TextLabel")
@@ -536,9 +529,9 @@ KillToggle.MouseButton1Click:Connect(function()
             end
         end
 
-        -- Update toggle visual
+        -- Update button visual
+        KillToggle.Text = "Enabled"
         TweenService:Create(KillToggle, TweenInfo.new(0.2), {BackgroundColor3 = COLORS.TOGGLE_ON}):Play()
-        TweenService:Create(KillToggleCircle, TweenInfo.new(0.2, Enum.EasingStyle.Back), {Position = UDim2.new(1, -22, 0.5, -9)}):Play()
     else
         if killBrick then
             -- Re-enable the Code script
@@ -554,9 +547,9 @@ KillToggle.MouseButton1Click:Connect(function()
             end
         end
 
-        -- Update toggle visual
+        -- Update button visual
+        KillToggle.Text = "Disabled"
         TweenService:Create(KillToggle, TweenInfo.new(0.2), {BackgroundColor3 = COLORS.TOGGLE_OFF}):Play()
-        TweenService:Create(KillToggleCircle, TweenInfo.new(0.2, Enum.EasingStyle.Back), {Position = UDim2.new(0, 4, 0.5, -9)}):Play()
     end
 end)
 
