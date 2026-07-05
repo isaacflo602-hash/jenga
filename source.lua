@@ -1,12 +1,8 @@
---[[
-    NEO-PANEL REBOOT: ADVANCED EDITION
-    Architecture: Scrollable Grid + Dual-Channel Native Input
-]]
+
 
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
-local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
@@ -109,7 +105,7 @@ PageScroll.ScrollBarThickness = 4
 PageScroll.ScrollBarImageColor3 = THEME.CardBg
 PageScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
 PageScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
-PageScroll.Active = false -- Allows touch to easily pass directly down to buttons
+PageScroll.Active = false
 PageScroll.Parent = MainWindow
 
 local UIListLayout = Instance.new("UIListLayout")
@@ -211,13 +207,12 @@ end
 -- Generate Requested Modules
 local _, TeleportWinTrigger       = buildFeatureButton("Instant Teleport", "Warp directly to objective button", 2)
 local _, DeleteTowerTrigger       = buildFeatureButton("Delete Tower", "Completely destroy the main tower model", 3)
-local _, TeleportDestroyerTrigger = buildFeatureButton("Teleport the Destroyer", "Warp straight to the Shooter position", 4)
-local _, TeleportTowerTrigger     = buildFeatureButton("Teleport to Tower", "Warp directly to the Tower model position", 5)
+local _, TeleportDestroyerTrigger = buildFeatureButton("Teleport the Destroyer", "Warp straight to the Shooter Panel Add", 4)
 
-local SpeedInput = buildValueInput("WalkSpeed Modification", "16", 6)
-local JumpInput  = buildValueInput("JumpPower Modification", "50", 7)
+local SpeedInput = buildValueInput("WalkSpeed Modification", "16", 5)
+local JumpInput  = buildValueInput("JumpPower Modification", "50", 6)
 
-local InfJumpCard, InfJumpTrigger = buildFeatureButton("Infinite Jump", "Toggle seamless multi-air jumps", 8)
+local InfJumpCard, InfJumpTrigger = buildFeatureButton("Infinite Jump", "Toggle seamless multi-air jumps", 7)
 
 -- Status Bar Footer
 local StatusBar = Instance.new("TextLabel")
@@ -273,8 +268,20 @@ local function getHRP()
     return char and char:FindFirstChild("HumanoidRootPart")
 end
 
+-- Helper validation function to confirm player belongs to Towers team
+local function verifyTowersTeam()
+    local myTeam = player.Team
+    if myTeam and myTeam.Name == "Towers" then
+        return true
+    end
+    pushStatus("Action Blocked: Must be on Towers team", true)
+    return false
+end
+
 -- 1. Original Objective Teleport
 registerUniversalTap(TeleportWinTrigger, function()
+    if not verifyTowersTeam() then return end
+    
     local root = getHRP()
     local obj = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Classic") and workspace.Map.Classic:FindFirstChild("Button")
     if root and obj and obj:IsA("BasePart") then
@@ -296,33 +303,27 @@ registerUniversalTap(DeleteTowerTrigger, function()
     end
 end)
 
--- 3. Teleport to Shooter
+-- 3. Teleport to Shooter Control Panel Add
 registerUniversalTap(TeleportDestroyerTrigger, function()
+    if not verifyTowersTeam() then return end
+
     local root = getHRP()
-    local shooter = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Classic") and workspace.Map.Classic:FindFirstChild("Shooter")
-    if root and shooter and shooter:IsA("BasePart") then
-        root.CFrame = shooter.CFrame * CFrame.new(0, 3, 0)
-        pushStatus("Warped to Destroyer Shooter position.", false)
+    local map = workspace:FindFirstChild("Map")
+    local classic = map and map:FindFirstChild("Classic")
+    local shooter = classic and classic:FindFirstChild("Shooter")
+    local panel = shooter and shooter:FindFirstChild("ControlPannel")
+    local speed = panel and panel:FindFirstChild("Speed")
+    local targetAdd = speed and speed:FindFirstChild("Add")
+
+    if root and targetAdd and targetAdd:IsA("BasePart") then
+        root.CFrame = targetAdd.CFrame * CFrame.new(0, 3, 0)
+        pushStatus("Warped to Control Panel Speed Add.", false)
     else
-        pushStatus("Shooter asset missing or untraceable.", true)
+        pushStatus("Target Shooter Add asset missing.", true)
     end
 end)
 
--- 4. Teleport to Tower
-registerUniversalTap(TeleportTowerTrigger, function()
-    local root = getHRP()
-    local targetTower = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Classic") and workspace.Map.Classic:FindFirstChild("Tower")
-    if root and targetTower then
-        -- Handle mapping calculation if Tower is a model or part
-        local targetCFrame = targetTower:IsA("Model") and targetTower:GetPivot() or targetTower.CFrame
-        root.CFrame = targetCFrame * CFrame.new(0, 4, 0)
-        pushStatus("Warped to structural tower center.", false)
-    else
-        pushStatus("Unable to warp: Tower location missing.", true)
-    end
-end)
-
--- 5 & 6. Speed & Jump Attribute Textbox Focus Engine
+-- 4 & 5. Speed & Jump Attribute Textbox Focus Engine
 SpeedInput.FocusLost:Connect(function(enterPressed)
     local val = tonumber(SpeedInput.Text)
     local char = player.Character
@@ -344,13 +345,14 @@ JumpInput.FocusLost:Connect(function(enterPressed)
     end
 end)
 
--- 7. Infinite Jump Sequence Configuration
+-- 6. Infinite Jump Toggle Tracking (Fixed)
 local infJumpActive = false
 local jumpConnection = nil
 
 registerUniversalTap(InfJumpTrigger, function()
-    infJumpActive = not infJumpActive
-    if infJumpActive then
+    if not infJumpActive then
+        -- Enable infinite jump
+        infJumpActive = true
         InfJumpCard.BackgroundColor3 = THEME.Accent
         pushStatus("Infinite jump enabled.", false)
         
@@ -362,6 +364,8 @@ registerUniversalTap(InfJumpTrigger, function()
             end
         end)
     else
+        -- Disable infinite jump
+        infJumpActive = false
         InfJumpCard.BackgroundColor3 = THEME.CardBg
         pushStatus("Infinite jump deactivated.", false)
         if jumpConnection then
