@@ -1,8 +1,3 @@
---[[
-    Main Panel
-    Features: Instant Win button, Minimize/Fullscreen/Exit with confirmation
-]]
-
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
