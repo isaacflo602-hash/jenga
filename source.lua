@@ -1,13 +1,12 @@
---hi
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-    Name = "[FIXED] Blocks n' Props",
-    LoadingTitle = "Neo Interface Engine",
-    LoadingSubtitle = "by Neo",
+    Name = "Blocks n' Props",
+    LoadingTitle = "Blocks n' Props ",
+    LoadingSubtitle = "Loading...",
     ConfigurationSaving = {
         Enabled = false
     },
