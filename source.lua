@@ -26,8 +26,8 @@ ScreenGui.Parent = playerGui
 
 local MainWindow = Instance.new("Frame")
 MainWindow.Name = "MainWindow"
-MainWindow.Size = UDim2.new(0, 460, 0, 360)
-MainWindow.Position = UDim2.new(0.5, -230, 0.5, -180)
+MainWindow.Size = UDim2.new(0, 460, 0, 310)
+MainWindow.Position = UDim2.new(0.5, -230, 0.5, -155)
 MainWindow.BackgroundColor3 = THEME.MainBg
 MainWindow.BorderSizePixel = 0
 MainWindow.Active = true
@@ -195,71 +195,12 @@ local function buildValueInput(titleText, defaultPlaceholder, LayoutOrder)
     return box
 end
 
-local function buildTrueToggleRow(titleText, subText, LayoutOrder)
-    local card = Instance.new("Frame")
-    card.Size = UDim2.new(1, 0, 0, 54)
-    card.BackgroundColor3 = THEME.CardBg
-    card.BorderSizePixel = 0
-    card.LayoutOrder = LayoutOrder
-    card.Parent = PageScroll
-    local cc = Instance.new("UICorner") cc.CornerRadius = UDim.new(0, 8) cc.Parent = card
-    
-    local mainLabel = Instance.new("TextLabel")
-    mainLabel.Size = UDim2.new(1, -80, 0, 22)
-    mainLabel.Position = UDim2.new(0, 12, 0, 8)
-    mainLabel.BackgroundTransparency = 1
-    mainLabel.Text = titleText
-    mainLabel.TextColor3 = THEME.Text
-    mainLabel.TextSize = 13
-    mainLabel.Font = Enum.Font.GothamBold
-    mainLabel.TextXAlignment = Enum.TextXAlignment.Left
-    mainLabel.Parent = card
-
-    local descLabel = Instance.new("TextLabel")
-    descLabel.Size = UDim2.new(1, -80, 0, 18)
-    descLabel.Position = UDim2.new(0, 12, 0, 28)
-    descLabel.BackgroundTransparency = 1
-    descLabel.Text = subText
-    descLabel.TextColor3 = THEME.TextMuted
-    descLabel.TextSize = 10
-    descLabel.Font = Enum.Font.Gotham
-    descLabel.TextXAlignment = Enum.TextXAlignment.Left
-    descLabel.Parent = card
-
-    local toggleContainer = Instance.new("Frame")
-    toggleContainer.Size = UDim2.new(0, 50, 0, 26)
-    toggleContainer.Position = UDim2.new(1, -62, 0.5, -13)
-    toggleContainer.BackgroundColor3 = THEME.OffState
-    toggleContainer.BorderSizePixel = 0
-    toggleContainer.Parent = card
-    local tbc = Instance.new("UICorner") tbc.CornerRadius = UDim.new(0, 13) tbc.Parent = toggleContainer
-
-    local toggleDot = Instance.new("Frame")
-    toggleDot.Size = UDim2.new(0, 18, 0, 18)
-    toggleDot.Position = UDim2.new(0, 4, 0.5, -9)
-    toggleDot.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    toggleDot.BorderSizePixel = 0
-    toggleDot.Parent = toggleContainer
-    local tdc = Instance.new("UICorner") tdc.CornerRadius = UDim.new(0, 9) tdc.Parent = toggleDot
-
-    local actionButton = Instance.new("TextButton")
-    actionButton.Size = UDim2.new(1, 0, 1, 0)
-    actionButton.BackgroundTransparency = 1
-    actionButton.Text = ""
-    actionButton.ZIndex = 5
-    actionButton.Parent = toggleContainer
-
-    return toggleContainer, toggleDot, actionButton
-end
-
 local _, TeleportWinTrigger       = buildFeatureButton("Instant Teleport", "Warp directly to objective button", 2)
 local _, DeleteTowerTrigger       = buildFeatureButton("Delete Tower", "Completely destroy the main tower model", 3)
 local _, TeleportDestroyerTrigger = buildFeatureButton("Teleport the Destroyer", "Warp straight to the Shooter Panel Add", 4)
 
 local SpeedInput = buildValueInput("WalkSpeed Modification", "16", 5)
 local JumpInput  = buildValueInput("JumpPower Modification", "50", 6)
-
-local InfJumpContainer, InfToggleDot, InfJumpButton = buildTrueToggleRow("Infinite Jump", "Toggle seamless multi-air jumps", 7)
 
 local StatusBar = Instance.new("TextLabel")
 StatusBar.Size = UDim2.new(1, -28, 0, 20)
@@ -377,40 +318,6 @@ JumpInput.FocusLost:Connect(function(enterPressed)
         hum.UseJumpPower = true
         hum.JumpPower = val
         pushStatus("JumpPower calibrated to: " .. val, false)
-    end
-end)
-
-local infJumpActive = false
-local jumpConnection = nil
-
-registerUniversalTap(InfJumpButton, function()
-    if infJumpActive == false then
-        infJumpActive = true
-        pushStatus("Infinite jump enabled.", false)
-        
-        TweenService:Create(InfJumpContainer, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = THEME.Accent}):Play()
-        TweenService:Create(InfToggleDot, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = UDim2.new(1, -22, 0.5, -9)}):Play()
-        
-        if not jumpConnection then
-            jumpConnection = UserInputService.JumpRequest:Connect(function()
-                local char = player.Character
-                local hum = char and char:FindFirstChildOfClass("Humanoid")
-                if hum then
-                    hum:ChangeState(Enum.HumanoidStateType.Jumping)
-                end
-            end)
-        end
-    else
-        infJumpActive = false
-        pushStatus("Infinite jump deactivated.", false)
-        
-        TweenService:Create(InfJumpContainer, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = THEME.OffState}):Play()
-        TweenService:Create(InfToggleDot, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = UDim2.new(0, 4, 0.5, -9)}):Play()
-        
-        if jumpConnection then
-            jumpConnection:Disconnect()
-            jumpConnection = nil
-        end
     end
 end)
 
