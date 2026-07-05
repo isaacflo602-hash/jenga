@@ -64,7 +64,7 @@ local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(0, 200, 1, 0)
 Title.Position = UDim2.new(0, 14, 0, 0)
 Title.BackgroundTransparency = 1
-Title.Text = "✦ NEO INTERFACE"
+Title.Text = "[FIXED] Blocks n' Props"
 Title.TextColor3 = THEME.Text
 Title.TextSize = 14
 Title.Font = Enum.Font.GothamBold
@@ -109,7 +109,7 @@ UIListLayout.Parent = PageScroll
 local SecHeader = Instance.new("TextLabel")
 SecHeader.Size = UDim2.new(1, 0, 0, 20)
 SecHeader.BackgroundTransparency = 1
-SecHeader.Text = "Execution Matrix"
+SecHeader.Text = "Game"
 SecHeader.TextColor3 = THEME.TextMuted
 SecHeader.TextSize = 12
 SecHeader.Font = Enum.Font.GothamBold
@@ -195,9 +195,9 @@ local function buildValueInput(titleText, defaultPlaceholder, LayoutOrder)
     return box
 end
 
-local _, TeleportWinTrigger       = buildFeatureButton("Instant Teleport", "Warp directly to objective button", 2)
+local _, TeleportWinTrigger       = buildFeatureButton("Instant Wim", "Instantly win the game with this feature", 2)
 local _, DeleteTowerTrigger       = buildFeatureButton("Delete Tower", "Completely destroy the main tower model", 3)
-local _, TeleportDestroyerTrigger = buildFeatureButton("Teleport the Destroyer", "Warp straight to the Shooter Panel Add", 4)
+local _, TeleportDestroyerTrigger = buildFeatureButton("Teleport to the Destroyer", "Teleport to the Destroyer", 4)
 
 local SpeedInput = buildValueInput("WalkSpeed Modification", "16", 5)
 local JumpInput  = buildValueInput("JumpPower Modification", "50", 6)
@@ -217,7 +217,7 @@ local Attribution = Instance.new("TextLabel")
 Attribution.Size = UDim2.new(1, -28, 0, 20)
 Attribution.Position = UDim2.new(0, 14, 1, -26)
 Attribution.BackgroundTransparency = 1
-Attribution.Text = "Crossplay Framework • Mobile Input Channel Enabled"
+Attribution.Text = "[FIXED] Blocks n' Props - Exploits"
 Attribution.TextColor3 = THEME.OffState
 Attribution.TextSize = 10
 Attribution.Font = Enum.Font.GothamMedium
