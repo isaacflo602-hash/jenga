@@ -1,344 +1,384 @@
+
 --[[
-    Rebuilt UI Panel 
-    Optimized Flat Input Architecture for Mobile & PC
+    NEO-PANEL REBOOT
+    Architecture: Flat UI Grid + Dual-Channel Native Input
 ]]
 
 local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
--- ─── Color Palette ───
-local COLORS = {
-    BG          = Color3.fromRGB(18, 18, 32),
-    TITLE_BAR   = Color3.fromRGB(12, 12, 24),
-    TAB_BAR     = Color3.fromRGB(25, 25, 48),
-    TAB_ACTIVE  = Color3.fromRGB(88, 101, 242),
-    ACCENT      = Color3.fromRGB(88, 101, 242),
-    ACCENT_HOVER= Color3.fromRGB(110, 120, 255),
-    TEXT        = Color3.fromRGB(240, 240, 255),
-    TEXT_DIM    = Color3.fromRGB(160, 160, 190),
-    EXIT        = Color3.fromRGB(239, 68, 68),
-    MINIMIZE    = Color3.fromRGB(250, 204, 21),
-    FULLSCREEN  = Color3.fromRGB(34, 197, 94),
-    GREEN       = Color3.fromRGB(34, 197, 94),
-    RED         = Color3.fromRGB(239, 68, 68),
-    GRAY        = Color3.fromRGB(107, 114, 128),
-    TOGGLE_OFF  = Color3.fromRGB(55, 55, 85),
-    TOGGLE_ON   = Color3.fromRGB(88, 101, 242),
+-- ─── Configuration & Theme ───
+local THEME = {
+    MainBg       = Color3.fromRGB(24, 24, 37),
+    HeaderBg     = Color3.fromRGB(17, 17, 27),
+    CardBg       = Color3.fromRGB(30, 30, 46),
+    Accent       = Color3.fromRGB(137, 180, 250),
+    AccentHover  = Color3.fromRGB(166, 227, 161),
+    Text         = Color3.fromRGB(205, 214, 244),
+    TextMuted    = Color3.fromRGB(166, 173, 186),
+    Green        = Color3.fromRGB(166, 227, 161),
+    Red          = Color3.fromRGB(243, 139, 168),
+    OffState     = Color3.fromRGB(69, 71, 90),
 }
 
--- ─── Core UI Setup ───
+-- ─── UI Creation ───
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "UniversalPanel"
+ScreenGui.Name = "NeoPanel_Core"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 ScreenGui.IgnoreGuiInset = true
 ScreenGui.Parent = playerGui
 
-local Shadow = Instance.new("Frame")
-Shadow.Name = "Shadow"
-Shadow.Size = UDim2.new(0, 520, 0, 420)
-Shadow.Position = UDim2.new(0.5, -260, 0.5, -210)
-Shadow.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-Shadow.BackgroundTransparency = 0.6
-Shadow.BorderSizePixel = 0
-Shadow.Parent = ScreenGui
-local sc = Instance.new("UICorner") sc.CornerRadius = UDim.new(0, 16) sc.Parent = Shadow
+-- Base Window
+local MainWindow = Instance.new("Frame")
+MainWindow.Name = "MainWindow"
+MainWindow.Size = UDim2.new(0, 460, 0, 320)
+MainWindow.Position = UDim2.new(0.5, -230, 0.5, -160)
+MainWindow.BackgroundColor3 = THEME.MainBg
+MainWindow.BorderSizePixel = 0
+MainWindow.Active = true
+MainWindow.Parent = ScreenGui
 
-local MainFrame = Instance.new("Frame")
-MainFrame.Name = "MainFrame"
-MainFrame.Size = UDim2.new(0, 500, 0, 400)
-MainFrame.Position = UDim2.new(0.5, -250, 0.5, -200)
-MainFrame.BackgroundColor3 = COLORS.BG
-MainFrame.BorderSizePixel = 0
-MainFrame.ClipsDescendants = true
-MainFrame.Parent = ScreenGui
-local mc = Instance.new("UICorner") mc.CornerRadius = UDim.new(0, 12) mc.Parent = MainFrame
-local ms = Instance.new("UIStroke") ms.Color = Color3.fromRGB(60, 60, 100) ms.Thickness = 1 ms.Parent = MainFrame
+local MainCorner = Instance.new("UICorner")
+MainCorner.CornerRadius = UDim.new(0, 10)
+MainCorner.Parent = MainWindow
 
--- ─── Header Elements ───
-local TitleBar = Instance.new("Frame")
-TitleBar.Name = "TitleBar"
-TitleBar.Size = UDim2.new(1, 0, 0, 42)
-TitleBar.BackgroundColor3 = COLORS.TITLE_BAR
-TitleBar.BorderSizePixel = 0
-TitleBar.Parent = MainFrame
-local tc = Instance.new("UICorner") tc.CornerRadius = UDim.new(0, 12) tc.Parent = TitleBar
+local MainStroke = Instance.new("UIStroke")
+MainStroke.Color = THEME.CardBg
+MainStroke.Thickness = 1.5
+MainStroke.Parent = MainWindow
 
-local TitleBarCover = Instance.new("Frame")
-TitleBarCover.Size = UDim2.new(1, 0, 0, 14)
-TitleBarCover.Position = UDim2.new(0, 0, 1, -14)
-TitleBarCover.BackgroundColor3 = COLORS.TITLE_BAR
-TitleBarCover.BorderSizePixel = 0
-TitleBarCover.Parent = TitleBar
+-- Header
+local Header = Instance.new("Frame")
+Header.Name = "Header"
+Header.Size = UDim2.new(1, 0, 0, 40)
+Header.BackgroundColor3 = THEME.HeaderBg
+Header.BorderSizePixel = 0
+Header.Parent = MainWindow
 
-local TitleLabel = Instance.new("TextLabel")
-TitleLabel.Size = UDim2.new(0, 200, 1, 0)
-TitleLabel.Position = UDim2.new(0, 16, 0, 0)
-TitleLabel.BackgroundTransparency = 1
-TitleLabel.Text = "⚙  Main Panel"
-TitleLabel.TextColor3 = COLORS.TEXT
-TitleLabel.TextSize = 16
-TitleLabel.Font = Enum.Font.GothamBold
-TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
-TitleLabel.Parent = TitleBar
+local HeaderCorner = Instance.new("UICorner")
+HeaderCorner.CornerRadius = UDim.new(0, 10)
+HeaderCorner.Parent = Header
 
--- Window Controls Helper
-local function createHeaderBtn(name, text, color, xOffset)
-    local btn = Instance.new("TextButton")
-    btn.Name = name
-    btn.Size = UDim2.new(0, 36, 0, 24)
-    btn.Position = UDim2.new(1, xOffset, 0.5, -12)
-    btn.BackgroundColor3 = color
-    btn.Text = text
-    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btn.TextSize = 13
-    btn.Font = Enum.Font.GothamBold
-    btn.BorderSizePixel = 0
-    btn.AutoButtonColor = false
-    btn.Parent = TitleBar
-    local cc = Instance.new("UICorner") cc.CornerRadius = UDim.new(0, 6) cc.Parent = btn
-    return btn
-end
+-- Sharp edge correction for header bottom
+local HeaderPatch = Instance.new("Frame")
+HeaderPatch.Size = UDim2.new(1, 0, 0, 10)
+HeaderPatch.Position = UDim2.new(0, 0, 1, -10)
+HeaderPatch.BackgroundColor3 = THEME.HeaderBg
+HeaderPatch.BorderSizePixel = 0
+HeaderPatch.Parent = Header
 
-local ExitBtn      = createHeaderBtn("ExitBtn",      "✕",  COLORS.EXIT,      -44)
-local FullscreenBtn = createHeaderBtn("FullscreenBtn", "⛶",  COLORS.FULLSCREEN, -88)
-local MinimizeBtn   = createHeaderBtn("MinimizeBtn",   "—",  COLORS.MINIMIZE,   -132)
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(0, 200, 1, 0)
+Title.Position = UDim2.new(0, 14, 0, 0)
+Title.BackgroundTransparency = 1
+Title.Text = "✦ NEO INTERFACE"
+Title.TextColor3 = THEME.Text
+Title.TextSize = 14
+Title.Font = Enum.Font.GothamBold
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.Parent = Header
 
--- ─── Navigation/Tab Setup ───
-local TabBar = Instance.new("Frame")
-TabBar.Name = "TabBar"
-TabBar.Size = UDim2.new(1, 0, 0, 42)
-TabBar.Position = UDim2.new(0, 0, 0, 42)
-TabBar.BackgroundColor3 = COLORS.TAB_BAR
-TabBar.BorderSizePixel = 0
-TabBar.Parent = MainFrame
+local CloseBtn = Instance.new("TextButton")
+CloseBtn.Name = "CloseBtn"
+CloseBtn.Size = UDim2.new(0, 28, 0, 24)
+CloseBtn.Position = UDim2.new(1, -38, 0.5, -12)
+CloseBtn.BackgroundColor3 = THEME.Red
+CloseBtn.Text = "✕"
+CloseBtn.TextColor3 = THEME.HeaderBg
+CloseBtn.TextSize = 11
+CloseBtn.Font = Enum.Font.GothamBold
+CloseBtn.BorderSizePixel = 0
+CloseBtn.AutoButtonColor = false
+CloseBtn.Parent = Header
 
-local TabLabel = Instance.new("TextLabel")
-TabLabel.Size = UDim2.new(0, 150, 1, 0)
-TabLabel.Position = UDim2.new(0, 16, 0, 0)
-TabLabel.BackgroundTransparency = 1
-TabLabel.Text = "main"
-TabLabel.TextColor3 = COLORS.TEXT
-TabLabel.TextSize = 14
-TabLabel.Font = Enum.Font.GothamSemibold
-TabLabel.TextXAlignment = Enum.TextXAlignment.Left
-TabLabel.Parent = TabBar
+local CloseCorner = Instance.new("UICorner")
+CloseCorner.CornerRadius = UDim.new(0, 6)
+CloseCorner.Parent = CloseBtn
 
-local TabIndicator = Instance.new("Frame")
-TabIndicator.Size = UDim2.new(0, 60, 0, 3)
-TabIndicator.Position = UDim2.new(0, 16, 1, -3)
-TabIndicator.BackgroundColor3 = COLORS.ACCENT
-TabIndicator.BorderSizePixel = 0
-TabIndicator.Parent = TabBar
+-- ─── Grid Page Engine ───
+local PageContainer = Instance.new("Frame")
+PageContainer.Name = "PageContainer"
+PageContainer.Size = UDim2.new(1, -28, 1, -110)
+PageContainer.Position = UDim2.new(0, 14, 0, 54)
+PageContainer.BackgroundTransparency = 1
+PageContainer.Parent = MainWindow
 
--- ─── Dynamic Content Frame ───
-local ContentFrame = Instance.new("Frame")
-ContentFrame.Name = "ContentFrame"
-ContentFrame.Size = UDim2.new(1, -32, 1, -110)
-ContentFrame.Position = UDim2.new(0, 16, 0, 95)
-ContentFrame.BackgroundTransparency = 1
-ContentFrame.Parent = MainFrame
+-- Page 1: Cheats Layout
+local Page_Cheats = Instance.new("Frame")
+Page_Cheats.Name = "Page_Cheats"
+Page_Cheats.Size = UDim2.new(1, 0, 1, 0)
+Page_Cheats.BackgroundTransparency = 1
+Page_Cheats.Visible = true
+Page_Cheats.Parent = PageContainer
 
-local UIListLayout = Instance.new("UIListLayout")
-UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-UIListLayout.Padding = UDim.new(0, 12)
-UIListLayout.Parent = ContentFrame
+local UIGridLayout = Instance.new("UIGridLayout")
+UIGridLayout.CellSize = UDim2.new(0.5, -6, 0, 64)
+UIGridLayout.CellPadding = UDim2.new(0, 12, 0, 12)
+UIGridLayout.SortOrder = Enum.SortOrder.LayoutOrder
+UIGridLayout.Parent = Page_Cheats
 
--- Section Label
-local SecHeader = Instance.new("TextLabel")
-SecHeader.Size = UDim2.new(1, 0, 0, 20)
-SecHeader.BackgroundTransparency = 1
-SecHeader.Text = "Quick Actions"
-SecHeader.TextColor3 = COLORS.TEXT_DIM
-SecHeader.TextSize = 12
-SecHeader.Font = Enum.Font.GothamBold
-SecHeader.TextXAlignment = Enum.TextXAlignment.Left
-SecHeader.LayoutOrder = 1
-SecHeader.Parent = ContentFrame
+-- Page 2: Credits Layout
+local Page_Credits = Instance.new("Frame")
+Page_Credits.Name = "Page_Credits"
+Page_Credits.Size = UDim2.new(1, 0, 1, 0)
+Page_Credits.BackgroundTransparency = 1
+Page_Credits.Visible = false
+Page_Credits.Parent = PageContainer
 
--- ─── Card Builder Function ───
-local function createContainerCard(title, desc, order)
+local CreditsLabel = Instance.new("TextLabel")
+CreditsLabel.Size = UDim2.new(1, 0, 1, 0)
+CreditsLabel.BackgroundTransparency = 1
+CreditsLabel.Text = "System Framework: Rebuilt Edition\nTarget Platform: Mobile / PC Crossplay\nStatus: Fully Operational"
+CreditsLabel.TextColor3 = THEME.TextMuted
+CreditsLabel.TextSize = 13
+CreditsLabel.Font = Enum.Font.GothamMedium
+CreditsLabel.LineHeight = 1.4
+CreditsLabel.Parent = Page_Credits
+
+-- ─── Bottom Navigation Dock ───
+local BottomDock = Instance.new("Frame")
+BottomDock.Name = "BottomDock"
+BottomDock.Size = UDim2.new(1, -28, 0, 40)
+BottomDock.Position = UDim2.new(0, 14, 1, -54)
+BottomDock.BackgroundColor3 = THEME.HeaderBg
+BottomDock.BorderSizePixel = 0
+BottomDock.Parent = MainWindow
+
+local DockCorner = Instance.new("UICorner")
+DockCorner.CornerRadius = UDim.new(0, 8)
+DockCorner.Parent = BottomDock
+
+local Tab1Btn = Instance.new("TextButton")
+Tab1Btn.Size = UDim2.new(0.5, -4, 1, -8)
+Tab1Btn.Position = UDim2.new(0, 4, 0, 4)
+Tab1Btn.BackgroundColor3 = THEME.Accent
+Tab1Btn.Text = "Modules"
+Tab1Btn.TextColor3 = THEME.MainBg
+Tab1Btn.Font = Enum.Font.GothamBold
+Tab1Btn.TextSize = 12
+Tab1Btn.BorderSizePixel = 0
+Tab1Btn.AutoButtonColor = false
+Tab1Btn.Parent = BottomDock
+local t1c = Instance.new("UICorner") t1c.CornerRadius = UDim.new(0, 6) t1c.Parent = Tab1Btn
+
+local Tab2Btn = Instance.new("TextButton")
+Tab2Btn.Size = UDim2.new(0.5, -4, 1, -8)
+Tab2Btn.Position = UDim2.new(0.5, 0, 0, 4)
+Tab2Btn.BackgroundTransparency = 1
+Tab2Btn.Text = "Information"
+Tab2Btn.TextColor3 = THEME.TextMuted
+Tab2Btn.Font = Enum.Font.GothamBold
+Tab2Btn.TextSize = 12
+Tab2Btn.BorderSizePixel = 0
+Tab2Btn.AutoButtonColor = false
+Tab2Btn.Parent = BottomDock
+local t2c = Instance.new("UICorner") t2c.CornerRadius = UDim.new(0, 6) t2c.Parent = Tab2Btn
+
+-- ─── Functional Feature Button Factories ───
+local function buildFeatureButton(titleText, subText, LayoutOrder)
     local card = Instance.new("Frame")
-    card.Size = UDim2.new(1, 0, 0, 56)
-    card.BackgroundColor3 = Color3.fromRGB(30, 30, 55)
+    card.BackgroundColor3 = THEME.CardBg
     card.BorderSizePixel = 0
-    card.LayoutOrder = order
-    card.Parent = ContentFrame
-    local cardCorner = Instance.new("UICorner") cardCorner.CornerRadius = UDim.new(0, 10) cardCorner.Parent = card
+    card.LayoutOrder = LayoutOrder
+    card.Parent = Page_Cheats
+    local cc = Instance.new("UICorner") cc.CornerRadius = UDim.new(0, 8) cc.Parent = card
+    
+    local mainLabel = Instance.new("TextLabel")
+    mainLabel.Size = UDim2.new(1, -16, 0, 22)
+    mainLabel.Position = UDim2.new(0, 12, 0, 10)
+    mainLabel.BackgroundTransparency = 1
+    mainLabel.Text = titleText
+    mainLabel.TextColor3 = THEME.Text
+    mainLabel.TextSize = 13
+    mainLabel.Font = Enum.Font.GothamBold
+    mainLabel.TextXAlignment = Enum.TextXAlignment.Left
+    mainLabel.Parent = card
 
-    local lbl = Instance.new("TextLabel")
-    lbl.Size = UDim2.new(1, -120, 0, 22)
-    lbl.Position = UDim2.new(0, 16, 0, 8)
-    lbl.BackgroundTransparency = 1
-    lbl.Text = title
-    lbl.TextColor3 = COLORS.TEXT
-    lbl.TextSize = 15
-    lbl.Font = Enum.Font.GothamSemibold
-    lbl.TextXAlignment = Enum.TextXAlignment.Left
-    lbl.Parent = card
+    local descLabel = Instance.new("TextLabel")
+    descLabel.Size = UDim2.new(1, -16, 0, 18)
+    descLabel.Position = UDim2.new(0, 12, 0, 30)
+    descLabel.BackgroundTransparency = 1
+    descLabel.Text = subText
+    descLabel.TextColor3 = THEME.TextMuted
+    descLabel.TextSize = 10
+    descLabel.Font = Enum.Font.Gotham
+    descLabel.TextXAlignment = Enum.TextXAlignment.Left
+    descLabel.Parent = card
 
-    local dsc = Instance.new("TextLabel")
-    dsc.Size = UDim2.new(1, -120, 0, 18)
-    dsc.Position = UDim2.new(0, 16, 0, 30)
-    dsc.BackgroundTransparency = 1
-    dsc.Text = desc
-    dsc.TextColor3 = COLORS.TEXT_DIM
-    dsc.TextSize = 11
-    dsc.Font = Enum.Font.Gotham
-    dsc.TextXAlignment = Enum.TextXAlignment.Left
-    dsc.Parent = card
+    local interceptor = Instance.new("TextButton")
+    interceptor.Size = UDim2.new(1, 0, 1, 0)
+    interceptor.BackgroundTransparency = 1
+    interceptor.Text = ""
+    interceptor.ZIndex = 5
+    interceptor.Parent = card
 
-    local targetBtn = Instance.new("TextButton")
-    targetBtn.Size = UDim2.new(0, 90, 0, 36)
-    targetBtn.Position = UDim2.new(1, -106, 0.5, -18)
-    targetBtn.BorderSizePixel = 0
-    targetBtn.AutoButtonColor = false
-    targetBtn.Font = Enum.Font.GothamBold
-    targetBtn.TextSize = 13
-    targetBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    targetBtn.Parent = card
-    local btnCorner = Instance.new("UICorner") btnCorner.CornerRadius = UDim.new(0, 8) btnCorner.Parent = targetBtn
-
-    return targetBtn
+    return card, interceptor
 end
 
-local InstantWinBtn = createContainerCard("Instant Win", "Teleport to the win button", 2)
-InstantWinBtn.BackgroundColor3 = COLORS.ACCENT
-InstantWinBtn.Text = "Go"
+local TeleportCard, TeleportTrigger = buildFeatureButton("Instant Teleport", "Warp directly to objective", 1)
+local KillBrickCard, KillBrickTrigger = buildFeatureButton("Deactivate Danger", "Bypass level kill checks", 2)
 
-local KillToggle = createContainerCard("Disable Kill Brick", "Remove kill brick code & touch", 3)
-KillToggle.BackgroundColor3 = COLORS.TOGGLE_OFF
-KillToggle.Text = "Disabled"
+-- Status Bar Footer
+local StatusBar = Instance.new("TextLabel")
+StatusBar.Size = UDim2.new(1, -28, 0, 20)
+StatusBar.Position = UDim2.new(0, 14, 1, -24)
+StatusBar.BackgroundTransparency = 1
+StatusBar.Text = "System Status: Nominal"
+StatusBar.TextColor3 = THEME.TextMuted
+StatusBar.TextSize = 11
+StatusBar.Font = Enum.Font.GothamMedium
+StatusBar.TextXAlignment = Enum.TextXAlignment.Left
+StatusBar.Parent = MainWindow
 
-local StatusLabel = Instance.new("TextLabel")
-StatusLabel.Size = UDim2.new(1, 0, 0, 24)
-StatusLabel.BackgroundTransparency = 1
-StatusLabel.Text = ""
-StatusLabel.TextColor3 = COLORS.TEXT_DIM
-StatusLabel.TextSize = 13
-StatusLabel.Font = Enum.Font.GothamSemibold
-StatusLabel.TextXAlignment = Enum.TextXAlignment.Left
-StatusLabel.LayoutOrder = 4
-StatusLabel.Parent = ContentFrame
-
--- ─── Bulletproof Global Universal Logic Engine ───
-local function bindCrossPlatformTap(guiObject, callback)
-    -- Fire via Engine Click Event
-    guiObject.MouseButton1Click:Connect(callback)
-    -- Fire via Dedicated Mobile Touch Event
-    guiObject.TouchTap:Connect(callback)
+-- ─── Cross Platform Smart Input Engine ───
+local function registerUniversalTap(buttonInstance, actionCallback)
+    buttonInstance.MouseButton1Click:Connect(actionCallback)
+    buttonInstance.TouchTap:Connect(actionCallback)
 end
 
-local function showStatus(text, color)
-    StatusLabel.Text = text
-    StatusLabel.TextColor3 = color
-    task.delay(3, function()
-        if StatusLabel.Text == text then
-            StatusLabel.Text = ""
+local function pushStatus(message, isAlert)
+    StatusBar.Text = message
+    StatusBar.TextColor3 = isAlert and THEME.Red or THEME.Green
+    task.delay(4, function()
+        if StatusBar.Text == message then
+            StatusBar.Text = "System Status: Nominal"
+            StatusBar.TextColor3 = THEME.TextMuted
         end
     end)
 end
 
--- Teleport Sequence
-bindCrossPlatformTap(InstantWinBtn, function()
-    local team = player.Team
-    if team and team.Name == "Towers" then
-        local character = player.Character
-        local hrp = character and character:FindFirstChild("HumanoidRootPart")
-        local mapFolder = workspace:FindFirstChild("Map")
-        local classicFolder = mapFolder and mapFolder:FindFirstChild("Classic")
-        local targetButton = classicFolder and classicFolder:FindFirstChild("Button")
+-- Tab Swap Logic
+registerUniversalTap(Tab1Btn, function()
+    Page_Cheats.Visible = true
+    Page_Credits.Visible = false
+    Tab1Btn.BackgroundTransparency = 0
+    Tab1Btn.TextColor3 = THEME.MainBg
+    Tab2Btn.BackgroundTransparency = 1
+    Tab2Btn.TextColor3 = THEME.TextMuted
+end)
 
-        if hrp and targetButton then
-            hrp.CFrame = targetButton.CFrame + Vector3.new(0, 3, 0)
-            showStatus("Teleported!", COLORS.GREEN)
+registerUniversalTap(Tab2Btn, function()
+    Page_Cheats.Visible = false
+    Page_Credits.Visible = true
+    Tab1Btn.BackgroundTransparency = 1
+    Tab1Btn.TextColor3 = THEME.TextMuted
+    Tab2Btn.BackgroundTransparency = 0
+    Tab2Btn.TextColor3 = THEME.MainBg
+end)
+
+-- Window Closure Execution
+registerUniversalTap(CloseBtn, function()
+    ScreenGui:Destroy()
+end)
+
+-- ─── Feature Logic Systems ───
+
+-- 1. Teleport Sequence
+registerUniversalTap(TeleportTrigger, function()
+    local myTeam = player.Team
+    if not (myTeam and myTeam.Name == "Towers") then
+        pushStatus("Action Blocked: Must be on team Towers", true)
+        return
+    end
+
+    local char = player.Character
+    local rootPart = char and char:FindFirstChild("HumanoidRootPart")
+    
+    -- Safe multi-layered environment scan
+    local map = workspace:FindFirstChild("Map")
+    local classic = map and map:FindFirstChild("Classic")
+    local objective = classic and classic:FindFirstChild("Button")
+
+    if rootPart and objective and objective:IsA("BasePart") then
+        rootPart.CFrame = objective.CFrame * CFrame.new(0, 3, 0)
+        pushStatus("Teleport completed successfully.", false)
+        
+        TweenService:Create(TeleportCard, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0, true), {
+            BackgroundColor3 = THEME.AccentHover
+        }):Play()
+    else
+        pushStatus("Failed: Target game elements missing from environment.", true)
+    end
+end)
+
+-- 2. Clean-Room Killbrick Disabler Logic
+local systemActiveState = false
+local storedPartCollision = nil
+
+registerUniversalTap(KillBrickTrigger, function()
+    systemActiveState = not systemActiveState
+    
+    local map = workspace:FindFirstChild("Map")
+    local classic = map and map:FindFirstChild("Classic")
+    local brick = classic and classic:FindFirstChild("KillBrick")
+
+    if brick then
+        local codeRunner = brick:FindFirstChild("Code")
+        local structuralTouch = brick:FindFirstChild("TouchInterest")
+
+        if systemActiveState then
+            -- Safely cut connection dependencies
+            if codeRunner and codeRunner:IsA("Script") then codeRunner.Disabled = true end
+            if structuralTouch then structuralTouch.Parent = nil end
+            
+            if brick:IsA("BasePart") then
+                storedPartCollision = brick.CanCollide
+                brick.CanCollide = true
+            end
+            
+            KillBrickCard.BackgroundColor3 = THEME.Accent
+            pushStatus("Level security matrices offline.", false)
         else
-            showStatus("Error: Map elements missing", COLORS.RED)
+            -- Restore environment to factory state
+            if codeRunner and codeRunner:IsA("Script") then codeRunner.Disabled = false end
+            
+            if brick:IsA("BasePart") and storedPartCollision ~= nil then
+                brick.CanCollide = storedPartCollision
+                storedPartCollision = nil
+            end
+            
+            KillBrickCard.BackgroundColor3 = THEME.CardBg
+            pushStatus("Level security matrices restored.", false)
         end
     else
-        showStatus("Error: Wrong team requirement", COLORS.RED)
+        pushStatus("Error: Core security asset untraceable.", true)
+        systemActiveState = not systemActiveState -- roll back state
     end
 end)
 
--- Kill Brick Modification Sequence
-local killBrickToggleOn = false
-local savedCanCollide = nil
+-- ─── Drag Management Engine ───
+local moving = false
+local offsetPos = Vector3.new()
+local initialPos = UDim2.new()
 
-local function executeToggle()
-    killBrickToggleOn = not killBrickToggleOn
-    local mapFolder = workspace:FindFirstChild("Map")
-    local classicFolder = mapFolder and mapFolder:FindFirstChild("Classic")
-    local killBrick = classicFolder and classicFolder:FindFirstChild("KillBrick")
-
-    if killBrickToggleOn then
-        if killBrick then
-            local code = killBrick:FindFirstChild("Code")
-            if code and code:IsA("Script") then code.Disabled = true end
-
-            local touchInterest = killBrick:FindFirstChild("TouchInterest")
-            if touchInterest then touchInterest.Parent = nil end
-
-            if killBrick:IsA("BasePart") then
-                savedCanCollide = killBrick.CanCollide
-                killBrick.CanCollide = true
-            end
-        end
-        KillToggle.Text = "Enabled"
-        KillToggle.BackgroundColor3 = COLORS.TOGGLE_ON
-    else
-        if killBrick then
-            local code = killBrick:FindFirstChild("Code")
-            if code and code:IsA("Script") then code.Disabled = false end
-
-            if killBrick:IsA("BasePart") and savedCanCollide ~= nil then
-                killBrick.CanCollide = savedCanCollide
-                savedCanCollide = nil
-            end
-        end
-        KillToggle.Text = "Disabled"
-        KillToggle.BackgroundColor3 = COLORS.TOGGLE_OFF
-    end
-end
-
-bindCrossPlatformTap(KillToggle, executeToggle)
-
--- ─── System Controls & Frame Adjustments ───
-local windowDragging = false
-local dragStart, startPos
-
-TitleBar.InputBegan:Connect(function(input)
+Header.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        windowDragging = true
-        dragStart = input.Position
-        startPos = MainFrame.Position
+        moving = true
+        offsetPos = input.Position
+        initialPos = MainWindow.Position
     end
 end)
 
-game:GetService("UserInputService").InputChanged:Connect(function(input)
-    if windowDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-        local delta = input.Position - dragStart
-        local newPos = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-        MainFrame.Position = newPos
-        Shadow.Position = newPos + UDim2.new(0, -10, 0, -10)
+UserInputService.InputChanged:Connect(function(input)
+    if moving and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local currentDiff = input.Position - offsetPos
+        MainWindow.Position = UDim2.new(
+            initialPos.X.Scale, initialPos.X.Offset + currentDiff.X,
+            initialPos.Y.Scale, initialPos.Y.Offset + currentDiff.Y
+        )
     end
 end)
 
-local function clearDrag() windowDragging = false end
-TitleBar.InputEnded:Connect(clearDrag)
-game:GetService("UserInputService").InputEnded:Connect(function(i)
-    if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then clearDrag() end
+local function ceaseMovement() moving = false end
+Header.InputEnded:Connect(ceaseMovement)
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        ceaseMovement()
+    end
 end)
 
--- Window Operations
-bindCrossPlatformTap(ExitBtn, function() ScreenGui:Destroy() end)
-
-local minimized = false
-bindCrossPlatformTap(MinimizeBtn, function()
-    minimized = not minimized
-    ContentFrame.Visible = not minimized
-    TabBar.Visible = not minimized
-    MainFrame.Size = minimized and UDim2.new(0, 500, 0, 42) or UDim2.new(0, 500, 0, 400)
-    Shadow.Size = minimized and UDim2.new(0, 520, 0, 62) or UDim2.new(0, 520, 0, 420)
-end)
+```
