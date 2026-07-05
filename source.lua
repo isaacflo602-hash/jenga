@@ -1,12 +1,12 @@
-
 --[[
-    NEO-PANEL REBOOT
-    Architecture: Flat UI Grid + Dual-Channel Native Input
+    NEO-PANEL REBOOT: ADVANCED EDITION
+    Architecture: Scrollable Grid + Dual-Channel Native Input
 ]]
 
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
@@ -35,8 +35,8 @@ ScreenGui.Parent = playerGui
 -- Base Window
 local MainWindow = Instance.new("Frame")
 MainWindow.Name = "MainWindow"
-MainWindow.Size = UDim2.new(0, 460, 0, 320)
-MainWindow.Position = UDim2.new(0.5, -230, 0.5, -160)
+MainWindow.Size = UDim2.new(0, 460, 0, 360)
+MainWindow.Position = UDim2.new(0.5, -230, 0.5, -180)
 MainWindow.BackgroundColor3 = THEME.MainBg
 MainWindow.BorderSizePixel = 0
 MainWindow.Active = true
@@ -63,7 +63,6 @@ local HeaderCorner = Instance.new("UICorner")
 HeaderCorner.CornerRadius = UDim.new(0, 10)
 HeaderCorner.Parent = Header
 
--- Sharp edge correction for header bottom
 local HeaderPatch = Instance.new("Frame")
 HeaderPatch.Size = UDim2.new(1, 0, 0, 10)
 HeaderPatch.Position = UDim2.new(0, 0, 1, -10)
@@ -99,97 +98,50 @@ local CloseCorner = Instance.new("UICorner")
 CloseCorner.CornerRadius = UDim.new(0, 6)
 CloseCorner.Parent = CloseBtn
 
--- ─── Grid Page Engine ───
-local PageContainer = Instance.new("Frame")
-PageContainer.Name = "PageContainer"
-PageContainer.Size = UDim2.new(1, -28, 1, -110)
-PageContainer.Position = UDim2.new(0, 14, 0, 54)
-PageContainer.BackgroundTransparency = 1
-PageContainer.Parent = MainWindow
+-- ─── Scrolling Content Panel Engine ───
+local PageScroll = Instance.new("ScrollingFrame")
+PageScroll.Name = "PageScroll"
+PageScroll.Size = UDim2.new(1, -28, 1, -110)
+PageScroll.Position = UDim2.new(0, 14, 0, 54)
+PageScroll.BackgroundTransparency = 1
+PageScroll.BorderSizePixel = 0
+PageScroll.ScrollBarThickness = 4
+PageScroll.ScrollBarImageColor3 = THEME.CardBg
+PageScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+PageScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+PageScroll.Active = false -- Allows touch to easily pass directly down to buttons
+PageScroll.Parent = MainWindow
 
--- Page 1: Cheats Layout
-local Page_Cheats = Instance.new("Frame")
-Page_Cheats.Name = "Page_Cheats"
-Page_Cheats.Size = UDim2.new(1, 0, 1, 0)
-Page_Cheats.BackgroundTransparency = 1
-Page_Cheats.Visible = true
-Page_Cheats.Parent = PageContainer
+local UIListLayout = Instance.new("UIListLayout")
+UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+UIListLayout.Padding = UDim.new(0, 10)
+UIListLayout.Parent = PageScroll
 
-local UIGridLayout = Instance.new("UIGridLayout")
-UIGridLayout.CellSize = UDim2.new(0.5, -6, 0, 64)
-UIGridLayout.CellPadding = UDim2.new(0, 12, 0, 12)
-UIGridLayout.SortOrder = Enum.SortOrder.LayoutOrder
-UIGridLayout.Parent = Page_Cheats
+-- Section Label
+local SecHeader = Instance.new("TextLabel")
+SecHeader.Size = UDim2.new(1, 0, 0, 20)
+SecHeader.BackgroundTransparency = 1
+SecHeader.Text = "Execution Matrix"
+SecHeader.TextColor3 = THEME.TextMuted
+SecHeader.TextSize = 12
+SecHeader.Font = Enum.Font.GothamBold
+SecHeader.TextXAlignment = Enum.TextXAlignment.Left
+SecHeader.LayoutOrder = 1
+SecHeader.Parent = PageScroll
 
--- Page 2: Credits Layout
-local Page_Credits = Instance.new("Frame")
-Page_Credits.Name = "Page_Credits"
-Page_Credits.Size = UDim2.new(1, 0, 1, 0)
-Page_Credits.BackgroundTransparency = 1
-Page_Credits.Visible = false
-Page_Credits.Parent = PageContainer
-
-local CreditsLabel = Instance.new("TextLabel")
-CreditsLabel.Size = UDim2.new(1, 0, 1, 0)
-CreditsLabel.BackgroundTransparency = 1
-CreditsLabel.Text = "System Framework: Rebuilt Edition\nTarget Platform: Mobile / PC Crossplay\nStatus: Fully Operational"
-CreditsLabel.TextColor3 = THEME.TextMuted
-CreditsLabel.TextSize = 13
-CreditsLabel.Font = Enum.Font.GothamMedium
-CreditsLabel.LineHeight = 1.4
-CreditsLabel.Parent = Page_Credits
-
--- ─── Bottom Navigation Dock ───
-local BottomDock = Instance.new("Frame")
-BottomDock.Name = "BottomDock"
-BottomDock.Size = UDim2.new(1, -28, 0, 40)
-BottomDock.Position = UDim2.new(0, 14, 1, -54)
-BottomDock.BackgroundColor3 = THEME.HeaderBg
-BottomDock.BorderSizePixel = 0
-BottomDock.Parent = MainWindow
-
-local DockCorner = Instance.new("UICorner")
-DockCorner.CornerRadius = UDim.new(0, 8)
-DockCorner.Parent = BottomDock
-
-local Tab1Btn = Instance.new("TextButton")
-Tab1Btn.Size = UDim2.new(0.5, -4, 1, -8)
-Tab1Btn.Position = UDim2.new(0, 4, 0, 4)
-Tab1Btn.BackgroundColor3 = THEME.Accent
-Tab1Btn.Text = "Modules"
-Tab1Btn.TextColor3 = THEME.MainBg
-Tab1Btn.Font = Enum.Font.GothamBold
-Tab1Btn.TextSize = 12
-Tab1Btn.BorderSizePixel = 0
-Tab1Btn.AutoButtonColor = false
-Tab1Btn.Parent = BottomDock
-local t1c = Instance.new("UICorner") t1c.CornerRadius = UDim.new(0, 6) t1c.Parent = Tab1Btn
-
-local Tab2Btn = Instance.new("TextButton")
-Tab2Btn.Size = UDim2.new(0.5, -4, 1, -8)
-Tab2Btn.Position = UDim2.new(0.5, 0, 0, 4)
-Tab2Btn.BackgroundTransparency = 1
-Tab2Btn.Text = "Information"
-Tab2Btn.TextColor3 = THEME.TextMuted
-Tab2Btn.Font = Enum.Font.GothamBold
-Tab2Btn.TextSize = 12
-Tab2Btn.BorderSizePixel = 0
-Tab2Btn.AutoButtonColor = false
-Tab2Btn.Parent = BottomDock
-local t2c = Instance.new("UICorner") t2c.CornerRadius = UDim.new(0, 6) t2c.Parent = Tab2Btn
-
--- ─── Functional Feature Button Factories ───
+-- ─── Feature UI Component Builders ───
 local function buildFeatureButton(titleText, subText, LayoutOrder)
     local card = Instance.new("Frame")
+    card.Size = UDim2.new(1, 0, 0, 54)
     card.BackgroundColor3 = THEME.CardBg
     card.BorderSizePixel = 0
     card.LayoutOrder = LayoutOrder
-    card.Parent = Page_Cheats
+    card.Parent = PageScroll
     local cc = Instance.new("UICorner") cc.CornerRadius = UDim.new(0, 8) cc.Parent = card
     
     local mainLabel = Instance.new("TextLabel")
     mainLabel.Size = UDim2.new(1, -16, 0, 22)
-    mainLabel.Position = UDim2.new(0, 12, 0, 10)
+    mainLabel.Position = UDim2.new(0, 12, 0, 8)
     mainLabel.BackgroundTransparency = 1
     mainLabel.Text = titleText
     mainLabel.TextColor3 = THEME.Text
@@ -200,7 +152,7 @@ local function buildFeatureButton(titleText, subText, LayoutOrder)
 
     local descLabel = Instance.new("TextLabel")
     descLabel.Size = UDim2.new(1, -16, 0, 18)
-    descLabel.Position = UDim2.new(0, 12, 0, 30)
+    descLabel.Position = UDim2.new(0, 12, 0, 28)
     descLabel.BackgroundTransparency = 1
     descLabel.Text = subText
     descLabel.TextColor3 = THEME.TextMuted
@@ -219,20 +171,77 @@ local function buildFeatureButton(titleText, subText, LayoutOrder)
     return card, interceptor
 end
 
-local TeleportCard, TeleportTrigger = buildFeatureButton("Instant Teleport", "Warp directly to objective", 1)
-local KillBrickCard, KillBrickTrigger = buildFeatureButton("Deactivate Danger", "Bypass level kill checks", 2)
+local function buildValueInput(titleText, defaultPlaceholder, LayoutOrder)
+    local card = Instance.new("Frame")
+    card.Size = UDim2.new(1, 0, 0, 46)
+    card.BackgroundColor3 = THEME.CardBg
+    card.BorderSizePixel = 0
+    card.LayoutOrder = LayoutOrder
+    card.Parent = PageScroll
+    local cc = Instance.new("UICorner") cc.CornerRadius = UDim.new(0, 8) cc.Parent = card
+
+    local mainLabel = Instance.new("TextLabel")
+    mainLabel.Size = UDim2.new(0.5, 0, 1, 0)
+    mainLabel.Position = UDim2.new(0, 12, 0, 0)
+    mainLabel.BackgroundTransparency = 1
+    mainLabel.Text = titleText
+    mainLabel.TextColor3 = THEME.Text
+    mainLabel.TextSize = 13
+    mainLabel.Font = Enum.Font.GothamBold
+    mainLabel.TextXAlignment = Enum.TextXAlignment.Left
+    mainLabel.Parent = card
+
+    local box = Instance.new("TextBox")
+    box.Size = UDim2.new(0, 100, 0, 30)
+    box.Position = UDim2.new(1, -112, 0.5, -15)
+    box.BackgroundColor3 = THEME.HeaderBg
+    box.BorderSizePixel = 0
+    box.Text = ""
+    box.PlaceholderText = defaultPlaceholder
+    box.TextColor3 = THEME.Accent
+    box.PlaceholderColor3 = THEME.TextMuted
+    box.Font = Enum.Font.GothamBold
+    box.TextSize = 12
+    box.Parent = card
+    local bc = Instance.new("UICorner") bc.CornerRadius = UDim.new(0, 6) bc.Parent = box
+
+    return box
+end
+
+-- Generate Requested Modules
+local _, TeleportWinTrigger       = buildFeatureButton("Instant Teleport", "Warp directly to objective button", 2)
+local _, DeleteTowerTrigger       = buildFeatureButton("Delete Tower", "Completely destroy the main tower model", 3)
+local _, TeleportDestroyerTrigger = buildFeatureButton("Teleport the Destroyer", "Warp straight to the Shooter position", 4)
+local _, TeleportTowerTrigger     = buildFeatureButton("Teleport to Tower", "Warp directly to the Tower model position", 5)
+
+local SpeedInput = buildValueInput("WalkSpeed Modification", "16", 6)
+local JumpInput  = buildValueInput("JumpPower Modification", "50", 7)
+
+local InfJumpCard, InfJumpTrigger = buildFeatureButton("Infinite Jump", "Toggle seamless multi-air jumps", 8)
 
 -- Status Bar Footer
 local StatusBar = Instance.new("TextLabel")
 StatusBar.Size = UDim2.new(1, -28, 0, 20)
-StatusBar.Position = UDim2.new(0, 14, 1, -24)
+StatusBar.Position = UDim2.new(0, 14, 1, -54)
 StatusBar.BackgroundTransparency = 1
-StatusBar.Text = "System Status: Nominal"
+StatusBar.Text = "System Status: Ready"
 StatusBar.TextColor3 = THEME.TextMuted
 StatusBar.TextSize = 11
 StatusBar.Font = Enum.Font.GothamMedium
 StatusBar.TextXAlignment = Enum.TextXAlignment.Left
 StatusBar.Parent = MainWindow
+
+-- Bottom Attribution Frame
+local Attribution = Instance.new("TextLabel")
+Attribution.Size = UDim2.new(1, -28, 0, 20)
+Attribution.Position = UDim2.new(0, 14, 1, -26)
+Attribution.BackgroundTransparency = 1
+Attribution.Text = "Crossplay Framework • Mobile Input Channel Enabled"
+Attribution.TextColor3 = THEME.OffState
+Attribution.TextSize = 10
+Attribution.Font = Enum.Font.GothamMedium
+Attribution.TextXAlignment = Enum.TextXAlignment.Left
+Attribution.Parent = MainWindow
 
 -- ─── Cross Platform Smart Input Engine ───
 local function registerUniversalTap(buttonInstance, actionCallback)
@@ -245,108 +254,120 @@ local function pushStatus(message, isAlert)
     StatusBar.TextColor3 = isAlert and THEME.Red or THEME.Green
     task.delay(4, function()
         if StatusBar.Text == message then
-            StatusBar.Text = "System Status: Nominal"
+            StatusBar.Text = "System Status: Ready"
             StatusBar.TextColor3 = THEME.TextMuted
         end
     end)
 end
 
--- Tab Swap Logic
-registerUniversalTap(Tab1Btn, function()
-    Page_Cheats.Visible = true
-    Page_Credits.Visible = false
-    Tab1Btn.BackgroundTransparency = 0
-    Tab1Btn.TextColor3 = THEME.MainBg
-    Tab2Btn.BackgroundTransparency = 1
-    Tab2Btn.TextColor3 = THEME.TextMuted
-end)
-
-registerUniversalTap(Tab2Btn, function()
-    Page_Cheats.Visible = false
-    Page_Credits.Visible = true
-    Tab1Btn.BackgroundTransparency = 1
-    Tab1Btn.TextColor3 = THEME.TextMuted
-    Tab2Btn.BackgroundTransparency = 0
-    Tab2Btn.TextColor3 = THEME.MainBg
-end)
-
--- Window Closure Execution
+-- Close Button
 registerUniversalTap(CloseBtn, function()
     ScreenGui:Destroy()
 end)
 
--- ─── Feature Logic Systems ───
+-- ─── Feature Executions ───
 
--- 1. Teleport Sequence
-registerUniversalTap(TeleportTrigger, function()
-    local myTeam = player.Team
-    if not (myTeam and myTeam.Name == "Towers") then
-        pushStatus("Action Blocked: Must be on team Towers", true)
-        return
-    end
-
+-- Helper function to fetch safe character reference
+local function getHRP()
     local char = player.Character
-    local rootPart = char and char:FindFirstChild("HumanoidRootPart")
-    
-    -- Safe multi-layered environment scan
-    local map = workspace:FindFirstChild("Map")
-    local classic = map and map:FindFirstChild("Classic")
-    local objective = classic and classic:FindFirstChild("Button")
+    return char and char:FindFirstChild("HumanoidRootPart")
+end
 
-    if rootPart and objective and objective:IsA("BasePart") then
-        rootPart.CFrame = objective.CFrame * CFrame.new(0, 3, 0)
-        pushStatus("Teleport completed successfully.", false)
-        
-        TweenService:Create(TeleportCard, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0, true), {
-            BackgroundColor3 = THEME.AccentHover
-        }):Play()
+-- 1. Original Objective Teleport
+registerUniversalTap(TeleportWinTrigger, function()
+    local root = getHRP()
+    local obj = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Classic") and workspace.Map.Classic:FindFirstChild("Button")
+    if root and obj and obj:IsA("BasePart") then
+        root.CFrame = obj.CFrame * CFrame.new(0, 3, 0)
+        pushStatus("Warped to button objective.", false)
     else
-        pushStatus("Failed: Target game elements missing from environment.", true)
+        pushStatus("Target element not found.", true)
     end
 end)
 
--- 2. Clean-Room Killbrick Disabler Logic
-local systemActiveState = false
-local storedPartCollision = nil
-
-registerUniversalTap(KillBrickTrigger, function()
-    systemActiveState = not systemActiveState
-    
-    local map = workspace:FindFirstChild("Map")
-    local classic = map and map:FindFirstChild("Classic")
-    local brick = classic and classic:FindFirstChild("KillBrick")
-
-    if brick then
-        local codeRunner = brick:FindFirstChild("Code")
-        local structuralTouch = brick:FindFirstChild("TouchInterest")
-
-        if systemActiveState then
-            -- Safely cut connection dependencies
-            if codeRunner and codeRunner:IsA("Script") then codeRunner.Disabled = true end
-            if structuralTouch then structuralTouch.Parent = nil end
-            
-            if brick:IsA("BasePart") then
-                storedPartCollision = brick.CanCollide
-                brick.CanCollide = true
-            end
-            
-            KillBrickCard.BackgroundColor3 = THEME.Accent
-            pushStatus("Level security matrices offline.", false)
-        else
-            -- Restore environment to factory state
-            if codeRunner and codeRunner:IsA("Script") then codeRunner.Disabled = false end
-            
-            if brick:IsA("BasePart") and storedPartCollision ~= nil then
-                brick.CanCollide = storedPartCollision
-                storedPartCollision = nil
-            end
-            
-            KillBrickCard.BackgroundColor3 = THEME.CardBg
-            pushStatus("Level security matrices restored.", false)
-        end
+-- 2. Delete Tower
+registerUniversalTap(DeleteTowerTrigger, function()
+    local targetTower = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Classic") and workspace.Map.Classic:FindFirstChild("Tower")
+    if targetTower then
+        targetTower:Destroy()
+        pushStatus("Tower model successfully expunged.", false)
     else
-        pushStatus("Error: Core security asset untraceable.", true)
-        systemActiveState = not systemActiveState -- roll back state
+        pushStatus("Tower target location missing or already deleted.", true)
+    end
+end)
+
+-- 3. Teleport to Shooter
+registerUniversalTap(TeleportDestroyerTrigger, function()
+    local root = getHRP()
+    local shooter = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Classic") and workspace.Map.Classic:FindFirstChild("Shooter")
+    if root and shooter and shooter:IsA("BasePart") then
+        root.CFrame = shooter.CFrame * CFrame.new(0, 3, 0)
+        pushStatus("Warped to Destroyer Shooter position.", false)
+    else
+        pushStatus("Shooter asset missing or untraceable.", true)
+    end
+end)
+
+-- 4. Teleport to Tower
+registerUniversalTap(TeleportTowerTrigger, function()
+    local root = getHRP()
+    local targetTower = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Classic") and workspace.Map.Classic:FindFirstChild("Tower")
+    if root and targetTower then
+        -- Handle mapping calculation if Tower is a model or part
+        local targetCFrame = targetTower:IsA("Model") and targetTower:GetPivot() or targetTower.CFrame
+        root.CFrame = targetCFrame * CFrame.new(0, 4, 0)
+        pushStatus("Warped to structural tower center.", false)
+    else
+        pushStatus("Unable to warp: Tower location missing.", true)
+    end
+end)
+
+-- 5 & 6. Speed & Jump Attribute Textbox Focus Engine
+SpeedInput.FocusLost:Connect(function(enterPressed)
+    local val = tonumber(SpeedInput.Text)
+    local char = player.Character
+    local hum = char and char:FindFirstChildOfClass("Humanoid")
+    if hum and val then
+        hum.WalkSpeed = val
+        pushStatus("WalkSpeed calibrated to: " .. val, false)
+    end
+end)
+
+JumpInput.FocusLost:Connect(function(enterPressed)
+    local val = tonumber(JumpInput.Text)
+    local char = player.Character
+    local hum = char and char:FindFirstChildOfClass("Humanoid")
+    if hum and val then
+        hum.UseJumpPower = true
+        hum.JumpPower = val
+        pushStatus("JumpPower calibrated to: " .. val, false)
+    end
+end)
+
+-- 7. Infinite Jump Sequence Configuration
+local infJumpActive = false
+local jumpConnection = nil
+
+registerUniversalTap(InfJumpTrigger, function()
+    infJumpActive = not infJumpActive
+    if infJumpActive then
+        InfJumpCard.BackgroundColor3 = THEME.Accent
+        pushStatus("Infinite jump enabled.", false)
+        
+        jumpConnection = UserInputService.JumpRequest:Connect(function()
+            local char = player.Character
+            local hum = char and char:FindFirstChildOfClass("Humanoid")
+            if hum then
+                hum:ChangeState(Enum.HumanoidStateType.Jumping)
+            end
+        end)
+    else
+        InfJumpCard.BackgroundColor3 = THEME.CardBg
+        pushStatus("Infinite jump deactivated.", false)
+        if jumpConnection then
+            jumpConnection:Disconnect()
+            jumpConnection = nil
+        end
     end
 end)
 
@@ -380,5 +401,3 @@ UserInputService.InputEnded:Connect(function(input)
         ceaseMovement()
     end
 end)
-
-```
