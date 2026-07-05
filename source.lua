@@ -107,7 +107,7 @@ local TitleLabel = Instance.new("TextLabel")
 TitleLabel.Size = UDim2.new(0, 200, 1, 0)
 TitleLabel.Position = UDim2.new(0, 16, 0, 0)
 TitleLabel.BackgroundTransparency = 1
-TitleLabel.Text = "\xe2\x9a\x99  Main Panel"
+TitleLabel.Text = "⚙  Main Panel"
 TitleLabel.TextColor3 = COLORS.TEXT
 TitleLabel.TextSize = 16
 TitleLabel.Font = Enum.Font.GothamBold
@@ -142,9 +142,9 @@ local function createWindowBtn(name, text, color, xPos)
     return btn
 end
 
-local ExitBtn      = createWindowBtn("ExitBtn",      "\xe2\x9c\x95",  COLORS.EXIT,      -44)
+local ExitBtn      = createWindowBtn("ExitBtn",      "✕",  COLORS.EXIT,      -44)
 local FullscreenBtn = createWindowBtn("FullscreenBtn", "⛶",  COLORS.FULLSCREEN, -88)
-local MinimizeBtn   = createWindowBtn("MinimizeBtn",   "\xe2\x80\x94",  COLORS.MINIMIZE,   -132)
+local MinimizeBtn   = createWindowBtn("MinimizeBtn",   "—",  COLORS.MINIMIZE,   -132)
 
 -- ─── Tab Bar (Horizontal Sliding) ───
 local TabBar = Instance.new("Frame")
@@ -162,7 +162,7 @@ LeftArrow.Name = "LeftArrow"
 LeftArrow.Size = UDim2.new(0, 28, 1, 0)
 LeftArrow.Position = UDim2.new(0, 0, 0, 0)
 LeftArrow.BackgroundColor3 = Color3.fromRGB(20, 20, 42)
-LeftArrow.Text = "\xe2\x80\xb9"
+LeftArrow.Text = "‹"
 LeftArrow.TextColor3 = COLORS.TEXT
 LeftArrow.TextSize = 18
 LeftArrow.Font = Enum.Font.GothamBold
@@ -178,7 +178,7 @@ RightArrow.Name = "RightArrow"
 RightArrow.Size = UDim2.new(0, 28, 1, 0)
 RightArrow.Position = UDim2.new(1, -28, 0, 0)
 RightArrow.BackgroundColor3 = Color3.fromRGB(20, 20, 42)
-RightArrow.Text = "\xe2\x80\xba"
+RightArrow.Text = "›"
 RightArrow.TextColor3 = COLORS.TEXT
 RightArrow.TextSize = 18
 RightArrow.Font = Enum.Font.GothamBold
@@ -264,6 +264,7 @@ MainTab.ScrollBarImageColor3 = COLORS.ACCENT
 MainTab.CanvasSize = UDim2.new(0, 0, 0, 0)
 MainTab.AutomaticCanvasSize = Enum.AutomaticSize.Y
 MainTab.Visible = true
+MainTab.Selectable = false -- Prevents swallowing focus over elements inside
 MainTab.Parent = ContentFrame
 
 local MainLayout = Instance.new("UIListLayout")
@@ -330,6 +331,7 @@ InstantWinBtn.TextSize = 14
 InstantWinBtn.Font = Enum.Font.GothamBold
 InstantWinBtn.BorderSizePixel = 0
 InstantWinBtn.AutoButtonColor = false
+InstantWinBtn.Active = true
 InstantWinBtn.Parent = ActionCard
 addCorner(InstantWinBtn, 8)
 
@@ -379,6 +381,7 @@ KillToggle.TextSize = 13
 KillToggle.Font = Enum.Font.GothamBold
 KillToggle.BorderSizePixel = 0
 KillToggle.AutoButtonColor = false
+KillToggle.Active = true -- Key property optimization for mobile interaction
 KillToggle.Parent = ToggleCard
 addCorner(KillToggle, 8)
 
@@ -474,7 +477,7 @@ local function showStatus(text, color)
     end)
 end
 
-InstantWinBtn.MouseButton1Click:Connect(function()
+InstantWinBtn.Activated:Connect(function()
     local team = player.Team
     if team and team.Name == "Towers" then
         local character = player.Character
@@ -558,21 +561,9 @@ local function toggleKillBrick()
     end
 end
 
--- Desktop click
-KillToggle.MouseButton1Click:Connect(toggleKillBrick)
+-- Fire logic uniformly across all devices (Desktop click & Mobile touch tap)
+KillToggle.Activated:Connect(toggleKillBrick)
 
--- Mobile touch fallback (bypasses ScrollingFrame consuming touches)
-UserInputService.TouchTap:Connect(function(touchPositions)
-    for _, touchPos in ipairs(touchPositions) do
-        local btnPos = KillToggle.AbsolutePosition
-        local btnSize = KillToggle.AbsoluteSize
-        if touchPos.X >= btnPos.X and touchPos.X <= btnPos.X + btnSize.X
-        and touchPos.Y >= btnPos.Y and touchPos.Y <= btnPos.Y + btnSize.Y then
-            toggleKillBrick()
-            break
-        end
-    end
-end)
 
 -- ─── Window State ───
 local isMinimized = false
